@@ -1,0 +1,65 @@
+@using SistemHRD.Common.Constants
+@inject SistemHRD.Services.Interfaces.ILayananTenant LayananTenant
+
+<header class="app-navbar">
+    <div class="d-flex align-items-center gap-3">
+        <!-- Tombol Toggle Sidebar Mobile -->
+        <button type="button" class="btn btn-sm btn-light d-lg-none" id="btnToggleSidebar">
+            <i data-lucide="menu"></i>
+        </button>
+
+        <!-- Informasi Tenant Perusahaan Aktif -->
+        <div class="d-flex align-items-center gap-2">
+            @if (User.IsInRole(NamaPeran.SuperAdmin))
+            {
+                <span class="badge bg-dark px-3 py-2 rounded-pill d-flex align-items-center gap-1">
+                    <i data-lucide="shield" style="width: 14px; height: 14px;"></i>
+                    <span>SuperAdmin Platform</span>
+                </span>
+            }
+            else
+            {
+                var namaPerusahaan = User.FindFirst("NamaPerusahaan")?.Value ?? "Perusahaan";
+                var kodePerusahaan = User.FindFirst("KodePerusahaan")?.Value ?? "-";
+
+                <div class="badge-emerald d-flex align-items-center gap-2">
+                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                    <span>@namaPerusahaan (@kodePerusahaan)</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Sisi Kanan Navbar: Profil & Logout -->
+    <div class="d-flex align-items-center gap-3">
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="rounded-circle bg-emerald text-white d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px; background-color: var(--primary-emerald);">
+                    @(User.FindFirst("NamaLengkap")?.Value?.Substring(0, 1) ?? "U")
+                </div>
+                <div class="d-none d-md-block text-start">
+                    <div class="fw-semibold small lh-1">@(User.FindFirst("NamaLengkap")?.Value ?? User.Identity?.Name)</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">@(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "Pengguna")</small>
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2 mt-2" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" asp-controller="Pengguna" asp-action="Profil">
+                        <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                        <span>Profil Saya</span>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-controller="Autentikasi" asp-action="Keluar" method="post" class="d-inline w-100">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                            <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                            <span>Keluar (Logout)</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

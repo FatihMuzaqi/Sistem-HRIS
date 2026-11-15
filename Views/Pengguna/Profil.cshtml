@@ -1,0 +1,126 @@
+@model SistemHRD.ViewModels.ProfilViewModel
+@{
+    ViewData["Title"] = "Profil Pengguna";
+    Layout = "_Layout";
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <!-- Kartu Ringkasan Pengguna -->
+        <div class="card border-0 shadow-sm rounded-4 text-center p-4 bg-white mb-4">
+            <div class="rounded-circle text-white d-flex align-items-center justify-content-center mx-auto mb-3 fw-bold fs-2 shadow-sm" style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary-emerald), var(--primary-emerald-hover));">
+                @Model.NamaLengkap.Substring(0, 1)
+            </div>
+            <h5 class="fw-bold mb-1 text-dark">@Model.NamaLengkap</h5>
+            <div class="text-muted small mb-2">@Model.Email</div>
+            <div>
+                <span class="badge badge-emerald">@Model.PeranUtama</span>
+            </div>
+            <hr class="my-3 text-muted" />
+            <div class="text-start small text-muted">
+                <div class="mb-2 d-flex justify-content-between">
+                    <span>Perusahaan:</span>
+                    <strong class="text-dark">@Model.NamaPerusahaan</strong>
+                </div>
+                <div class="mb-2 d-flex justify-content-between">
+                    <span>Kode Tenant:</span>
+                    <strong class="text-dark">@Model.KodePerusahaan</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Terdaftar Sejak:</span>
+                    <strong class="text-dark">@Model.CreatedAt.ToString("dd MMMM yyyy")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Form Ubah Data Profil -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i data-lucide="user-pen" style="width: 18px; height: 18px; color: var(--primary-emerald);"></i>
+                    <span>Informasi Data Diri</span>
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <form asp-controller="Pengguna" asp-action="UbahProfil" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Alamat Email (Akun)</label>
+                            <input type="text" class="form-control bg-light" value="@Model.Email" readonly />
+                            <small class="text-muted" style="font-size: 0.75rem;">Email digunakan sebagai identitas login utama.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NamaLengkap" class="form-label small fw-semibold text-muted"></label>
+                            <input asp-for="NamaLengkap" class="form-control" required />
+                            <span asp-validation-for="NamaLengkap" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NomorTelepon" class="form-label small fw-semibold text-muted"></label>
+                            <input asp-for="NomorTelepon" class="form-control" placeholder="081234567890" />
+                            <span asp-validation-for="NomorTelepon" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Peran Akun</label>
+                            <input type="text" class="form-control bg-light" value="@Model.PeranUtama" readonly />
+                        </div>
+
+                        <div class="col-12 text-end mt-4">
+                            <button type="submit" class="btn btn-emerald px-4">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form Ubah Kata Sandi -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i data-lucide="key" style="width: 18px; height: 18px; color: var(--primary-emerald);"></i>
+                    <span>Keamanan Akun (Ganti Kata Sandi)</span>
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <form asp-controller="Pengguna" asp-action="UbahKataSandi" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Kata Sandi Saat Ini</label>
+                            <input type="password" name="KataSandiLama" class="form-control" required placeholder="••••••••" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Kata Sandi Baru</label>
+                            <input type="password" name="KataSandiBaru" class="form-control" required placeholder="Minimal 6 karakter" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Konfirmasi Sandi Baru</label>
+                            <input type="password" name="KonfirmasiKataSandi" class="form-control" required placeholder="Ulangi kata sandi baru" />
+                        </div>
+
+                        <div class="col-12 text-end mt-4">
+                            <button type="submit" class="btn btn-outline-danger px-4">
+                                Perbarui Kata Sandi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

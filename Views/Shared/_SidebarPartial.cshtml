@@ -1,0 +1,132 @@
+@using SistemHRD.Common.Constants
+
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Header Sidebar -->
+    <div class="sidebar-header">
+        <a asp-controller="Dasbor" asp-action="Index" class="sidebar-brand">
+            <div class="brand-icon">
+                <i data-lucide="shield-check" style="width: 22px; height: 22px;"></i>
+            </div>
+            <div>
+                <span style="color: var(--primary-emerald);">Sistem</span><span style="color: #0f172a;">HRD</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Menu Navigasi -->
+    <div class="sidebar-menu">
+        <div class="menu-category">Menu Utama</div>
+        <a asp-controller="Dasbor" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dasbor" ? "active" : "")">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dasbor</span>
+        </a>
+
+        @if (User.IsInRole(NamaPeran.SuperAdmin))
+        {
+            <div class="menu-category">Platform SuperAdmin</div>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="building-2"></i>
+                <span>Kelola Perusahaan</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="users-2"></i>
+                <span>Kelola Pengguna</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="file-clock"></i>
+                <span>Log Audit Platform</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="settings"></i>
+                <span>Pengaturan Sistem</span>
+            </a>
+        }
+
+        @if (User.IsInRole(NamaPeran.HRD) || User.IsInRole(NamaPeran.SuperAdmin))
+        {
+            <div class="menu-category">Manajemen SDM (HRD)</div>
+            <a asp-controller="Karyawan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Karyawan" ? "active" : "")">
+                <i data-lucide="users"></i>
+                <span>Data Karyawan</span>
+            </a>
+            <a asp-controller="Departemen" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Departemen" ? "active" : "")">
+                <i data-lucide="network"></i>
+                <span>Departemen</span>
+            </a>
+            <a asp-controller="Jabatan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Jabatan" ? "active" : "")">
+                <i data-lucide="briefcase"></i>
+                <span>Jabatan</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="calendar-check"></i>
+                <span>Kehadiran & Presensi</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="plane"></i>
+                <span>Manajemen Cuti</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="banknote"></i>
+                <span>Penggajian (Payroll)</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="user-plus"></i>
+                <span>Rekrutmen</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="award"></i>
+                <span>Penilaian Kinerja</span>
+            </a>
+        }
+
+        @if (User.IsInRole(NamaPeran.Manager) && !User.IsInRole(NamaPeran.SuperAdmin) && !User.IsInRole(NamaPeran.HRD))
+        {
+            <div class="menu-category">Manajemen Tim</div>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="users"></i>
+                <span>Anggota Tim</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="check-square"></i>
+                <span>Persetujuan Cuti/Lembur</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="trending-up"></i>
+                <span>Evaluasi Kinerja</span>
+            </a>
+        }
+
+        @if (User.IsInRole(NamaPeran.Finance) && !User.IsInRole(NamaPeran.SuperAdmin))
+        {
+            <div class="menu-category">Keuangan</div>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="wallet"></i>
+                <span>Proses Gaji</span>
+            </a>
+            <a href="#" class="nav-link-item">
+                <i data-lucide="file-spreadsheet"></i>
+                <span>Rekapitulasi Transfer</span>
+            </a>
+        }
+
+        <div class="menu-category">Employee Self Service</div>
+        <a href="#" class="nav-link-item">
+            <i data-lucide="clock"></i>
+            <span>Presensi Harian</span>
+        </a>
+        <a href="#" class="nav-link-item">
+            <i data-lucide="send"></i>
+            <span>Pengajuan Cuti</span>
+        </a>
+        <a href="#" class="nav-link-item">
+            <i data-lucide="receipt"></i>
+            <span>Slip Gaji Saya</span>
+        </a>
+
+        <div class="menu-category">Akun</div>
+        <a asp-controller="Pengguna" asp-action="Profil" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pengguna" ? "active" : "")">
+            <i data-lucide="user"></i>
+            <span>Profil Pengguna</span>
+        </a>
+    </div>
+</aside>

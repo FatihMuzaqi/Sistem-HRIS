@@ -1,0 +1,322 @@
+/* ==========================================================================
+   SistemHRD (Smart HRIS) — Emerald Green Design System
+   ========================================================================== */
+
+:root {
+  --primary-emerald: #059669;
+  --primary-emerald-hover: #047857;
+  --primary-emerald-light: #10b981;
+  --primary-emerald-subtle: #d1fae5;
+  --primary-emerald-bg: #ecfdf5;
+
+  --sidebar-width: 260px;
+  --navbar-height: 64px;
+
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Emerald Accents & Buttons */
+.btn-emerald {
+  background-color: var(--primary-emerald);
+  color: #ffffff;
+  border: 1px solid var(--primary-emerald);
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-emerald:hover, .btn-emerald:focus {
+  background-color: var(--primary-emerald-hover);
+  border-color: var(--primary-emerald-hover);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.btn-outline-emerald {
+  color: var(--primary-emerald);
+  border-color: var(--primary-emerald);
+  background-color: transparent;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-emerald:hover {
+  background-color: var(--primary-emerald);
+  color: #ffffff;
+}
+
+.badge-emerald {
+  background-color: var(--primary-emerald-subtle);
+  color: var(--primary-emerald-hover);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* App Container Layout */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar Styling */
+.app-sidebar {
+  width: var(--sidebar-width);
+  background-color: #ffffff;
+  border-right: 1px solid var(--border-color);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1020;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+  height: var(--navbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-decoration: none;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--primary-emerald), var(--primary-emerald-light));
+  color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+.menu-category {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+  padding: 12px 12px 6px;
+}
+
+.nav-link-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.925rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+  margin-bottom: 4px;
+}
+
+.nav-link-item:hover {
+  color: var(--primary-emerald);
+  background-color: var(--primary-emerald-bg);
+}
+
+.nav-link-item.active {
+  color: var(--primary-emerald);
+  background-color: var(--primary-emerald-subtle);
+  font-weight: 600;
+}
+
+.nav-link-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Main Area Layout */
+.app-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Navbar Styling */
+.app-navbar {
+  height: var(--navbar-height);
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+/* Content Body */
+.app-content {
+  flex: 1;
+  padding: 24px;
+}
+
+/* Cards & Statistics */
+.card-stat {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon-emerald {
+  background-color: var(--primary-emerald-subtle);
+  color: var(--primary-emerald);
+}
+
+.stat-icon-blue {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.stat-icon-amber {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.stat-icon-purple {
+  background-color: #f3e8ff;
+  color: #9333ea;
+}
+
+/* Tables */
+.table-custom {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-custom th {
+  background-color: #f8fafc;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table-custom td {
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.925rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+  .app-sidebar.show {
+    transform: translateX(0);
+  }
+  .app-main {
+    margin-left: 0;
+  }
+}
+
+/* Emerald Utility Helpers */
+.bg-emerald {
+  background-color: var(--primary-emerald) !important;
+}
+
+.text-emerald {
+  color: var(--primary-emerald) !important;
+}
+
+.bg-emerald-subtle {
+  background-color: var(--primary-emerald-bg) !important;
+}
+
+.hover-emerald:hover {
+  color: var(--primary-emerald) !important;
+}
+
+/* Custom Nav Pills for Tabbed Views */
+.custom-pills .nav-link {
+  color: var(--text-muted);
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.custom-pills .nav-link:hover {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+.custom-pills .nav-link.active {
+  background-color: var(--primary-emerald) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-emerald) !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+.custom-pills .nav-link.active .badge {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}

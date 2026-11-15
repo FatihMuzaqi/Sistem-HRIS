@@ -1,0 +1,629 @@
+@model SistemHRD.ViewModels.KaryawanDetailViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = $"Detail Karyawan — {Model.Karyawan.NamaLengkap}";
+    var activeTab = (string)(ViewBag.ActiveTab ?? "pribadi");
+    var lamaBekerja = DateTime.Today - Model.Karyawan.TanggalMasuk;
+    var tahunKerja = lamaBekerja.Days / 365;
+    var bulanKerja = (lamaBekerja.Days % 365) / 30;
+}
+
+<!-- Breadcrumb -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a asp-controller="Dasbor" asp-action="Index" class="text-decoration-none">Dasbor</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Karyawan</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Karyawan.NamaLengkap</li>
+            </ol>
+        </nav>
+        <h2 class="h4 fw-bold text-dark mb-0">Profil & Data Karyawan</h2>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Kembali
+        </a>
+        <a asp-action="Ubah" asp-route-id="@Model.Karyawan.Id" class="btn btn-emerald d-inline-flex align-items-center gap-1">
+            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i> Ubah Profil
+        </a>
+    </div>
+</div>
+
+<!-- Header Card Profil -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row align-items-center gap-4">
+            <div class="position-relative">
+                @if (!string.IsNullOrEmpty(Model.Karyawan.FotoProfil))
+                {
+                    <img src="/@Model.Karyawan.FotoProfil" alt="@Model.Karyawan.NamaLengkap" class="rounded-circle object-fit-cover shadow border border-3 border-white" style="width: 100px; height: 100px;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-emerald text-white d-flex align-items-center justify-content-center fw-bold shadow border border-3 border-white" style="width: 100px; height: 100px; font-size: 36px;">
+                        @Model.Karyawan.NamaLengkap.Substring(0, 1).ToUpper()
+                    </div>
+                }
+            </div>
+
+            <div class="text-center text-md-start flex-grow-1">
+                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
+                    <h3 class="h4 fw-bold text-dark mb-0">@Model.Karyawan.NamaLengkap</h3>
+                    <span class="badge bg-light text-muted border font-monospace">@Model.Karyawan.NomorIndukKaryawan</span>
+                    @{
+                        string badgeClass = Model.Karyawan.StatusKaryawan switch
+                        {
+                            StatusKaryawan.Tetap => "bg-success-subtle text-success",
+                            StatusKaryawan.Kontrak => "bg-info-subtle text-info",
+                            StatusKaryawan.Percobaan => "bg-primary-subtle text-primary",
+                            StatusKaryawan.Magang => "bg-warning-subtle text-warning",
+                            _ => "bg-secondary-subtle text-secondary"
+                        };
+                    }
+                    <span class="badge @badgeClass">@Model.Karyawan.StatusKaryawan</span>
+                </div>
+                <div class="text-muted d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-3 small mb-2">
+                    <span><i data-lucide="briefcase" style="width: 14px; height: 14px;" class="me-1"></i>@(Model.Karyawan.Jabatan?.NamaJabatan ?? "-")</span>
+                    <span><i data-lucide="network" style="width: 14px; height: 14px;" class="me-1"></i>@(Model.Karyawan.Departemen?.NamaDepartemen ?? "-")</span>
+                    <span><i data-lucide="calendar" style="width: 14px; height: 14px;" class="me-1"></i>Bergabung: @Model.Karyawan.TanggalMasuk.ToString("dd MMMM yyyy") (@(tahunKerja > 0 ? $"{tahunKerja} thn " : "")@(bulanKerja) bln)</span>
+                </div>
+            </div>
+
+            <div class="text-center text-md-end">
+                <form asp-action="UbahStatus" asp-route-id="@Model.Karyawan.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    @if (Model.Karyawan.StatusKaryawan == StatusKaryawan.Nonaktif)
+                    {
+                        <button type="submit" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1">
+                            <i data-lucide="check-circle" style="width: 15px; height: 15px;"></i> Aktifkan Karyawan
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1">
+                            <i data-lucide="power" style="width: 15px; height: 15px;"></i> Nonaktifkan Karyawan
+                        </button>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigasi Tab -->
+<ul class="nav nav-pills custom-pills mb-4 gap-2" id="karyawanTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "pribadi" ? "active" : "") d-flex align-items-center gap-2" id="pribadi-tab" data-bs-toggle="pill" data-bs-target="#pribadi" type="button" role="tab">
+            <i data-lucide="user" style="width: 16px; height: 16px;"></i> Data Pribadi
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "kontrak" ? "active" : "") d-flex align-items-center gap-2" id="kontrak-tab" data-bs-toggle="pill" data-bs-target="#kontrak" type="button" role="tab">
+            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i> Kontrak Kerja
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">@Model.DaftarKontrakKerja.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "dokumen" ? "active" : "") d-flex align-items-center gap-2" id="dokumen-tab" data-bs-toggle="pill" data-bs-target="#dokumen" type="button" role="tab">
+            <i data-lucide="paperclip" style="width: 16px; height: 16px;"></i> Dokumen
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">@Model.DaftarDokumen.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "kontak-darurat" ? "active" : "") d-flex align-items-center gap-2" id="kontak-tab" data-bs-toggle="pill" data-bs-target="#kontak-darurat" type="button" role="tab">
+            <i data-lucide="phone-call" style="width: 16px; height: 16px;"></i> Kontak Darurat
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">@Model.DaftarKontakDarurat.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "riwayat" ? "active" : "") d-flex align-items-center gap-2" id="riwayat-tab" data-bs-toggle="pill" data-bs-target="#riwayat" type="button" role="tab">
+            <i data-lucide="history" style="width: 16px; height: 16px;"></i> Pengalaman Kerja
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">@Model.DaftarRiwayatPekerjaan.Count</span>
+        </button>
+    </li>
+</ul>
+
+<!-- Konten Tiap Tab -->
+<div class="tab-content" id="karyawanTabContent">
+    <!-- TAB 1: DATA PRIBADI -->
+    <div class="tab-pane fade @(activeTab == "pribadi" ? "show active" : "")" id="pribadi" role="tabpanel">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-3 h-100">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                            <i data-lucide="id-card" style="width: 18px; height: 18px;" class="text-emerald"></i>
+                            Identitas Pribadi
+                        </h6>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted" style="width: 40%;">Nomor Induk Karyawan</td>
+                                    <td class="fw-semibold text-dark font-monospace">@Model.Karyawan.NomorIndukKaryawan</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Nama Lengkap</td>
+                                    <td class="fw-semibold text-dark">@Model.Karyawan.NamaLengkap</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Tempat, Tanggal Lahir</td>
+                                    <td class="text-dark">
+                                        @(Model.Karyawan.TempatLahir ?? "-"), @Model.Karyawan.TanggalLahir.ToString("dd MMMM yyyy")
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Jenis Kelamin</td>
+                                    <td class="text-dark">@(Model.Karyawan.JenisKelamin == JenisKelamin.LakiLaki ? "Laki-laki" : "Perempuan")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Alamat Domisili</td>
+                                    <td class="text-dark">@(Model.Karyawan.Alamat ?? "-")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-3 h-100">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                            <i data-lucide="building" style="width: 18px; height: 18px;" class="text-emerald"></i>
+                            Informasi Kepegawaian & Kontak
+                        </h6>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-borderless align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted" style="width: 40%;">Departemen</td>
+                                    <td class="fw-semibold text-dark">@(Model.Karyawan.Departemen?.NamaDepartemen ?? "-")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Jabatan</td>
+                                    <td class="fw-semibold text-dark">@(Model.Karyawan.Jabatan?.NamaJabatan ?? "-")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Status Karyawan</td>
+                                    <td>
+                                        <span class="badge @badgeClass">@Model.Karyawan.StatusKaryawan</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Tanggal Masuk</td>
+                                    <td class="text-dark">@Model.Karyawan.TanggalMasuk.ToString("dd MMMM yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Email Perusahaan</td>
+                                    <td><a href="mailto:@Model.Karyawan.Email" class="text-decoration-none">@Model.Karyawan.Email</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Nomor Telepon</td>
+                                    <td class="text-dark">@(Model.Karyawan.NomorTelepon ?? "-")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: KONTRAK KERJA -->
+    <div class="tab-pane fade @(activeTab == "kontrak" ? "show active" : "")" id="kontrak" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Riwayat & Daftar Kontrak Kerja</h6>
+                    <small class="text-muted">Semua perjanjian ikatan kerja yang tercatat dalam sistem.</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-emerald d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambahKontrak">
+                    <i data-lucide="plus" style="width: 15px; height: 15px;"></i> Tambah Kontrak
+                </button>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.DaftarKontrakKerja.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i data-lucide="file-x" style="width: 36px; height: 36px;" class="mb-2"></i>
+                        <p class="mb-0">Belum ada kontrak kerja yang terdaftar untuk karyawan ini.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">No Kontrak</th>
+                                    <th>Jenis</th>
+                                    <th>Tgl Mulai</th>
+                                    <th>Tgl Berakhir</th>
+                                    <th>Status</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ktr in Model.DaftarKontrakKerja)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-semibold font-monospace">@ktr.NomorKontrak</td>
+                                        <td><span class="badge bg-light text-dark border">@ktr.JenisKontrak</span></td>
+                                        <td>@ktr.TanggalMulai.ToString("dd MMM yyyy")</td>
+                                        <td>@(ktr.TanggalBerakhir.HasValue ? ktr.TanggalBerakhir.Value.ToString("dd MMM yyyy") : "Permanen")</td>
+                                        <td>
+                                            @if (ktr.StatusKontrak == StatusKontrak.Aktif)
+                                            {
+                                                <span class="badge bg-success-subtle text-success">Aktif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary-subtle text-secondary">@ktr.StatusKontrak</span>
+                                            }
+                                        </td>
+                                        <td><small class="text-muted">@(ktr.Keterangan ?? "-")</small></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: DOKUMEN KARYAWAN -->
+    <div class="tab-pane fade @(activeTab == "dokumen" ? "show active" : "")" id="dokumen" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Dokumen & Arsip Karyawan</h6>
+                    <small class="text-muted">Unggah berkas digital seperti KTP, NPWP, Ijazah, Kontrak PDF, dll.</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-emerald d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalUnggahDokumen">
+                    <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Unggah Dokumen
+                </button>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.DaftarDokumen.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i data-lucide="folder-x" style="width: 36px; height: 36px;" class="mb-2"></i>
+                        <p class="mb-0">Belum ada dokumen yang diunggah untuk karyawan ini.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Nama Dokumen</th>
+                                    <th>Kategori</th>
+                                    <th>Nama Berkas</th>
+                                    <th>Ukuran</th>
+                                    <th>Tgl Unggah</th>
+                                    <th class="text-end pe-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var dok in Model.DaftarDokumen)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-semibold text-dark">@dok.NamaDokumen</td>
+                                        <td><span class="badge bg-light text-dark border">@dok.JenisDokumen</span></td>
+                                        <td>
+                                            <span class="small font-monospace text-truncate d-inline-block" style="max-width: 200px;">@dok.NamaFile</span>
+                                        </td>
+                                        <td><small class="text-muted">@((dok.UkuranFile / 1024.0).ToString("F1")) KB</small></td>
+                                        <td><small class="text-muted">@dok.CreatedAt.ToString("dd MMM yyyy")</small></td>
+                                        <td class="text-end pe-4">
+                                            <a asp-action="UnduhDokumen" asp-route-id="@dok.Id" class="btn btn-sm btn-light text-primary" title="Unduh Dokumen">
+                                                <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+                                            </a>
+                                            <form asp-action="HapusDokumen" asp-route-id="@dok.Id" asp-route-karyawanId="@Model.Karyawan.Id" method="post" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus dokumen ini?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-light text-danger" title="Hapus Dokumen">
+                                                    <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: KONTAK DARURAT -->
+    <div class="tab-pane fade @(activeTab == "kontak-darurat" ? "show active" : "")" id="kontak-darurat" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Kontak Darurat</h6>
+                    <small class="text-muted">Orang yang dapat dihubungi dalam situasi darurat.</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-emerald d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambahKontakDarurat">
+                    <i data-lucide="plus" style="width: 15px; height: 15px;"></i> Tambah Kontak Darurat
+                </button>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.DaftarKontakDarurat.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i data-lucide="phone-off" style="width: 36px; height: 36px;" class="mb-2"></i>
+                        <p class="mb-0">Belum ada kontak darurat yang terdaftar.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3 p-4">
+                        @foreach (var kd in Model.DaftarKontakDarurat)
+                        {
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold text-dark mb-0">@kd.NamaLengkap</h6>
+                                        <span class="badge bg-emerald-subtle text-emerald">@kd.Hubungan</span>
+                                    </div>
+                                    <div class="small text-dark mb-1">
+                                        <i data-lucide="phone" style="width: 14px; height: 14px;" class="me-1 text-muted"></i>
+                                        <a href="tel:@kd.NomorTelepon" class="text-decoration-none">@kd.NomorTelepon</a>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(kd.Alamat))
+                                    {
+                                        <div class="small text-muted">
+                                            <i data-lucide="map-pin" style="width: 14px; height: 14px;" class="me-1"></i>@kd.Alamat
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: RIWAYAT PEKERJAAN -->
+    <div class="tab-pane fade @(activeTab == "riwayat" ? "show active" : "")" id="riwayat" role="tabpanel">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Pengalaman Kerja Terdahulu</h6>
+                    <small class="text-muted">Riwayat karir sebelum bergabung dengan perusahaan ini.</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-emerald d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalTambahRiwayat">
+                    <i data-lucide="plus" style="width: 15px; height: 15px;"></i> Tambah Riwayat
+                </button>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.DaftarRiwayatPekerjaan.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i data-lucide="briefcase" style="width: 36px; height: 36px;" class="mb-2"></i>
+                        <p class="mb-0">Belum ada riwayat pengalaman kerja yang dicatat.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4">
+                        @foreach (var rw in Model.DaftarRiwayatPekerjaan)
+                        {
+                            <div class="d-flex gap-3 mb-4">
+                                <div class="timeline-dot bg-emerald rounded-circle mt-1" style="width: 12px; height: 12px; flex-shrink: 0;"></div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">@rw.JabatanTerakhir</h6>
+                                    <div class="text-muted small fw-medium mb-1">
+                                        @rw.NamaPerusahaanSebelumnya &bull; @rw.TahunMulai - @rw.TahunSelesai
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(rw.DeskripsiTugas))
+                                    {
+                                        <p class="small text-muted mb-0">@rw.DeskripsiTugas</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1: Tambah Kontrak -->
+<div class="modal fade" id="modalTambahKontrak" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tambah Kontrak Kerja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="TambahKontrak" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="KaryawanId" value="@Model.Karyawan.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomor Kontrak <span class="text-danger">*</span></label>
+                        <input name="NomorKontrak" class="form-control" placeholder="Contoh: KTR/2026/001" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jenis Kontrak <span class="text-danger">*</span></label>
+                        <select name="JenisKontrak" class="form-select" required>
+                            @foreach (JenisKontrak jk in Enum.GetValues(typeof(JenisKontrak)))
+                            {
+                                <option value="@jk">@jk</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tgl Mulai <span class="text-danger">*</span></label>
+                            <input name="TanggalMulai" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tgl Selesai</label>
+                            <input name="TanggalBerakhir" type="date" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Status Kontrak</label>
+                        <select name="StatusKontrak" class="form-select">
+                            @foreach (StatusKontrak sk in Enum.GetValues(typeof(StatusKontrak)))
+                            {
+                                <option value="@sk">@sk</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Keterangan</label>
+                        <textarea name="Keterangan" class="form-control" rows="2" placeholder="Catatan tambahan..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Simpan Kontrak</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2: Unggah Dokumen -->
+<div class="modal fade" id="modalUnggahDokumen" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Unggah Dokumen Karyawan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UploadDokumen" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="KaryawanId" value="@Model.Karyawan.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Dokumen <span class="text-danger">*</span></label>
+                        <input name="NamaDokumen" class="form-control" placeholder="Contoh: KTP Asli / Scan Ijazah" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kategori Dokumen <span class="text-danger">*</span></label>
+                        <select name="JenisDokumen" class="form-select" required>
+                            @foreach (JenisDokumen jd in Enum.GetValues(typeof(JenisDokumen)))
+                            {
+                                <option value="@jd">@jd</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pilih Berkas <span class="text-danger">*</span></label>
+                        <input name="BerkasDokumen" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                        <small class="text-muted">Mendukung PDF, JPG, PNG, DOC, DOCX. Maksimal 5MB.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Keterangan</label>
+                        <textarea name="Keterangan" class="form-control" rows="2" placeholder="Catatan berkas (opsional)..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Unggah Berkas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 3: Tambah Kontak Darurat -->
+<div class="modal fade" id="modalTambahKontakDarurat" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tambah Kontak Darurat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="TambahKontakDarurat" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="KaryawanId" value="@Model.Karyawan.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Lengkap Kontak <span class="text-danger">*</span></label>
+                        <input name="NamaLengkap" class="form-control" placeholder="Nama wali/kerabat" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hubungan Keluarga <span class="text-danger">*</span></label>
+                        <input name="Hubungan" class="form-control" placeholder="Contoh: Orang Tua, Suami, Istri, Kakak" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomor Telepon <span class="text-danger">*</span></label>
+                        <input name="NomorTelepon" class="form-control" placeholder="08xxxxxxxxxx" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Alamat</label>
+                        <textarea name="Alamat" class="form-control" rows="2" placeholder="Alamat domisili kontak..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Simpan Kontak</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 4: Tambah Riwayat Pekerjaan -->
+<div class="modal fade" id="modalTambahRiwayat" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tambah Riwayat Pekerjaan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="TambahRiwayatPekerjaan" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="KaryawanId" value="@Model.Karyawan.Id" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Perusahaan Sebelumnya <span class="text-danger">*</span></label>
+                        <input name="NamaPerusahaanSebelumnya" class="form-control" placeholder="Nama PT / Instansi" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jabatan Terakhir <span class="text-danger">*</span></label>
+                        <input name="JabatanTerakhir" class="form-control" placeholder="Posisi kerja" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tahun Mulai <span class="text-danger">*</span></label>
+                            <input name="TahunMulai" type="number" class="form-control" value="@(DateTime.Today.Year - 3)" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tahun Selesai <span class="text-danger">*</span></label>
+                            <input name="TahunSelesai" type="number" class="form-control" value="@(DateTime.Today.Year - 1)" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Deskripsi Tugas</label>
+                        <textarea name="DeskripsiTugas" class="form-control" rows="3" placeholder="Deskripsikan peran dan pencapaian..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Simpan Riwayat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

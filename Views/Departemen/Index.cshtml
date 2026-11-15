@@ -1,0 +1,160 @@
+@model List<SistemHRD.Models.Entitas.Departemen>
+@{
+    ViewData["Title"] = "Manajemen Departemen";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a asp-controller="Dasbor" asp-action="Index" class="text-decoration-none">Dasbor</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Departemen</li>
+            </ol>
+        </nav>
+        <h2 class="h4 fw-bold text-dark mb-0">Manajemen Departemen</h2>
+        <p class="text-muted small mb-0">Kelola struktur unit organisasi dan penanggung jawab departemen.</p>
+    </div>
+    <div>
+        <a asp-action="Tambah" class="btn btn-emerald d-inline-flex align-items-center gap-2">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Tambah Departemen</span>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-0">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center py-5">
+                <div class="avatar-lg bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <i data-lucide="network" class="text-muted" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h5 class="fw-semibold text-dark">Belum Ada Departemen</h5>
+                <p class="text-muted small">Tambahkan departemen pertama Anda untuk mulai mengelola struktur organisasi.</p>
+                <a asp-action="Tambah" class="btn btn-sm btn-emerald">Tambah Departemen Baru</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 15%;">Kode</th>
+                            <th style="width: 25%;">Nama Departemen</th>
+                            <th style="width: 20%;">Kepala Departemen</th>
+                            <th class="text-center" style="width: 12%;">Jabatan</th>
+                            <th class="text-center" style="width: 12%;">Karyawan</th>
+                            <th class="text-center" style="width: 8%;">Status</th>
+                            <th class="text-end pe-4" style="width: 8%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dept in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-light text-dark border font-monospace">@dept.KodeDepartemen</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@dept.NamaDepartemen</div>
+                                    @if (!string.IsNullOrEmpty(dept.Deskripsi))
+                                    {
+                                        <small class="text-muted text-truncate d-block" style="max-width: 280px;">@dept.Deskripsi</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (dept.KepalaDepartemen != null)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-sm bg-emerald-subtle text-emerald rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px; font-weight: 600;">
+                                                @dept.KepalaDepartemen.NamaLengkap.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="small fw-medium text-dark">@dept.KepalaDepartemen.NamaLengkap</div>
+                                                <small class="text-muted" style="font-size: 11px;">@dept.KepalaDepartemen.NomorIndukKaryawan</small>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic small">Belum Ditentukan</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        @(dept.DaftarJabatan?.Count ?? 0) Jabatan
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        @(dept.DaftarKaryawan?.Count ?? 0) Orang
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (dept.StatusAktif)
+                                    {
+                                        <span class="badge bg-success-subtle text-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger">Nonaktif</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i data-lucide="more-vertical" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2" asp-action="Ubah" asp-route-id="@dept.Id">
+                                                    <i data-lucide="edit" style="width: 15px; height: 15px;"></i> Ubah
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalHapus_@dept.Id">
+                                                    <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i> Hapus
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Modal Konfirmasi Hapus -->
+                                    <div class="modal fade" id="modalHapus_@dept.Id" tabindex="-1" aria-labelledby="labelHapus_@dept.Id" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content text-start">
+                                                <div class="modal-header border-0 pb-0">
+                                                    <h5 class="modal-title fw-bold" id="labelHapus_@dept.Id">Konfirmasi Penghapusan</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body py-4">
+                                                    <p class="text-muted mb-0">Apakah Anda yakin ingin menghapus departemen <strong class="text-dark">@dept.NamaDepartemen</strong>? Tindakan ini tidak dapat dibatalkan jika departemen memiliki data terkait.</p>
+                                                </div>
+                                                <div class="modal-footer border-0 pt-0">
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                                    <form asp-action="Hapus" asp-route-id="@dept.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

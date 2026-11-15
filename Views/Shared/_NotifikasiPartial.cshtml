@@ -1,0 +1,34 @@
+@* Partial View untuk Notifikasi Toast / Flash Alerts *@
+
+@if (TempData["PesanSukses"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0" role="alert" style="background-color: #ecfdf5; color: #065f46; border-left: 4px solid #059669 !important;">
+        <i data-lucide="check-circle" class="me-2" style="width: 20px; height: 20px;"></i>
+        <div>
+            <strong>Berhasil!</strong> @TempData["PesanSukses"]
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["PesanError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0" role="alert" style="background-color: #fef2f2; color: #991b1b; border-left: 4px solid #dc2626 !important;">
+        <i data-lucide="alert-circle" class="me-2" style="width: 20px; height: 20px;"></i>
+        <div>
+            <strong>Terjadi Kesalahan!</strong> @TempData["PesanError"]
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["PesanPeringatan"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0" role="alert" style="background-color: #fffbeb; color: #92400e; border-left: 4px solid #d97706 !important;">
+        <i data-lucide="alert-triangle" class="me-2" style="width: 20px; height: 20px;"></i>
+        <div>
+            <strong>Peringatan:</strong> @TempData["PesanPeringatan"]
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}

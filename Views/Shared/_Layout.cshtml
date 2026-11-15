@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SistemHRD (Smart HRIS)</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- SistemHRD Emerald Custom Styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="app-wrapper">
+            <!-- Sidebar Kiri -->
+            <partial name="_SidebarPartial" />
+
+            <!-- Area Utama -->
+            <div class="app-main">
+                <!-- Top Navbar -->
+                <partial name="_NavbarPartial" />
+
+                <!-- Konten Halaman -->
+                <main class="app-content">
+                    <partial name="_NotifikasiPartial" />
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Tampilan Halaman Publik / Login -->
+        <main class="container-fluid p-0">
+            <partial name="_NotifikasiPartial" />
+            @RenderBody()
+        </main>
+    }
+
+    <!-- Script Libraries -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Inisialisasi Lucide Icons & Interaksi Sidebar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            const btnToggle = document.getElementById('btnToggleSidebar');
+            const sidebar = document.getElementById('appSidebar');
+            if (btnToggle && sidebar) {
+                btnToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('show');
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

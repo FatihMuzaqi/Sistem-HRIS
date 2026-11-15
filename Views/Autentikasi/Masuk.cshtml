@@ -1,0 +1,115 @@
+@model SistemHRD.ViewModels.MasukViewModel
+@{
+    ViewData["Title"] = "Masuk ke SistemHRD";
+    Layout = "_Layout";
+}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #e2e8f0 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-9 col-lg-7 col-xl-6">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <!-- Header Kartu -->
+                    <div class="p-4 p-md-5 text-center text-white" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <div class="d-inline-flex p-3 rounded-circle bg-white bg-opacity-25 mb-3">
+                            <i data-lucide="shield-check" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">SistemHRD</h3>
+                        <p class="mb-0 text-white-50 small">Smart Human Resource Information System — Multi-Tenant</p>
+                    </div>
+
+                    <!-- Body Form Login -->
+                    <div class="card-body p-4 p-md-5 bg-white">
+                        <div class="text-center mb-4">
+                            <h5 class="fw-semibold text-dark">Selamat Datang Kembali</h5>
+                            <p class="text-muted small">Silakan masuk dengan kredensial akun terdaftar Anda.</p>
+                        </div>
+
+                        <form asp-controller="Autentikasi" asp-action="Masuk" method="post" id="formMasuk">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="ReturnUrl" />
+
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small border-0 mb-3" style="background-color: #fef2f2; color: #991b1b;"></div>
+
+                            <!-- Input Email -->
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label small fw-semibold text-muted"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted">
+                                        <i data-lucide="mail" style="width: 18px; height: 18px;"></i>
+                                    </span>
+                                    <input asp-for="Email" id="inputEmail" class="form-control bg-light border-start-0" placeholder="nama@perusahaan.com" required autofocus />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Input Kata Sandi -->
+                            <div class="mb-3">
+                                <label asp-for="KataSandi" class="form-label small fw-semibold text-muted"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted">
+                                        <i data-lucide="lock" style="width: 18px; height: 18px;"></i>
+                                    </span>
+                                    <input asp-for="KataSandi" id="inputKataSandi" type="password" class="form-control bg-light border-start-0" placeholder="••••••••" required />
+                                </div>
+                                <span asp-validation-for="KataSandi" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Opsi Ingat Sesi -->
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="IngatSaya" id="ingatSayaCheck" />
+                                    <label class="form-check-label small text-muted" for="ingatSayaCheck">
+                                        Ingat sesi saya
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Submit -->
+                            <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                                <span>Masuk ke Akun</span>
+                            </button>
+                        </form>
+
+                        <!-- Akun Uji Coba Cepat (Testing Helpers) -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="text-muted small text-center mb-2 fw-semibold">Pilih Akun Uji Coba Cepat:</div>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="isiAkun('superadmin@sistemhrd.id', 'Admin#2026!')">
+                                    SuperAdmin
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" onclick="isiAkun('hrd@solusihr.id', 'Hrd#2026!')">
+                                    HRD PRSH 1
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="isiAkun('hrd2@majubersama.id', 'Hrd2#2026!')">
+                                    HRD PRSH 2
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning py-1 px-2" onclick="isiAkun('manager@solusihr.id', 'Manager#2026!')">
+                                    Manager
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info py-1 px-2" onclick="isiAkun('karyawan@solusihr.id', 'Karyawan#2026!')">
+                                    Karyawan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3 text-muted small">
+                    &copy; 2026 SistemHRD — Solusi Human Resource Enterprise Multi-Tenant.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function isiAkun(email, kataSandi) {
+            document.getElementById('inputEmail').value = email;
+            document.getElementById('inputKataSandi').value = kataSandi;
+        }
+    </script>
+}
