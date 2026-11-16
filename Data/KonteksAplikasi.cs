@@ -38,6 +38,27 @@ public class KonteksAplikasi : IdentityDbContext<Pengguna, Peran, Guid>
     public DbSet<KontakDaruratKaryawan> KontakDaruratKaryawan => Set<KontakDaruratKaryawan>();
     public DbSet<RiwayatPekerjaan> RiwayatPekerjaan => Set<RiwayatPekerjaan>();
 
+    // Modul Kehadiran
+    public DbSet<ShiftKerja> ShiftKerja => Set<ShiftKerja>();
+    public DbSet<JadwalKerja> JadwalKerja => Set<JadwalKerja>();
+    public DbSet<Kehadiran> Kehadiran => Set<Kehadiran>();
+    public DbSet<PengajuanLembur> PengajuanLembur => Set<PengajuanLembur>();
+
+    // Modul Cuti
+    public DbSet<JenisCuti> JenisCuti => Set<JenisCuti>();
+    public DbSet<SaldoCuti> SaldoCuti => Set<SaldoCuti>();
+    public DbSet<PengajuanCuti> PengajuanCuti => Set<PengajuanCuti>();
+    public DbSet<PersetujuanCuti> PersetujuanCuti => Set<PersetujuanCuti>();
+
+    // Modul Penggajian
+    public DbSet<KomponenGaji> KomponenGaji => Set<KomponenGaji>();
+    public DbSet<GajiKaryawan> GajiKaryawan => Set<GajiKaryawan>();
+    public DbSet<KebijakanPenggajianPerusahaan> KebijakanPenggajianPerusahaan => Set<KebijakanPenggajianPerusahaan>();
+    public DbSet<PeriodePenggajian> PeriodePenggajian => Set<PeriodePenggajian>();
+    public DbSet<Penggajian> Penggajian => Set<Penggajian>();
+    public DbSet<DetailPenggajian> DetailPenggajian => Set<DetailPenggajian>();
+    public DbSet<SlipGaji> SlipGaji => Set<SlipGaji>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -214,6 +235,114 @@ public class KonteksAplikasi : IdentityDbContext<Pengguna, Peran, Guid>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Konfigurasi Tabel ShiftKerja
+        builder.Entity<ShiftKerja>(b =>
+        {
+            b.ToTable("ShiftKerja");
+            b.HasIndex(s => new { s.PerusahaanId, s.KodeShift }).IsUnique();
+        });
+
+        // Konfigurasi Tabel JadwalKerja
+        builder.Entity<JadwalKerja>(b =>
+        {
+            b.ToTable("JadwalKerja");
+            b.HasIndex(jk => new { jk.PerusahaanId, jk.KaryawanId, jk.Tanggal });
+            b.HasOne(jk => jk.Karyawan)
+                .WithMany(k => k.DaftarJadwalKerja)
+                .HasForeignKey(jk => jk.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(jk => jk.ShiftKerja)
+                .WithMany(s => s.DaftarJadwalKerja)
+                .HasForeignKey(jk => jk.ShiftKerjaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Konfigurasi Tabel Kehadiran
+        builder.Entity<Kehadiran>(b =>
+        {
+            b.ToTable("Kehadiran");
+            b.HasIndex(kh => new { kh.PerusahaanId, kh.KaryawanId, kh.Tanggal }).IsUnique();
+            b.HasIndex(kh => new { kh.PerusahaanId, kh.Tanggal });
+            b.HasIndex(kh => new { kh.PerusahaanId, kh.Status });
+            b.HasOne(kh => kh.Karyawan)
+                .WithMany(k => k.DaftarKehadiran)
+                .HasForeignKey(kh => kh.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(kh => kh.ShiftKerja)
+                .WithMany(s => s.DaftarKehadiran)
+                .HasForeignKey(kh => kh.ShiftKerjaId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Konfigurasi Tabel PengajuanLembur
+        builder.Entity<PengajuanLembur>(b =>
+        {
+            b.ToTable("PengajuanLembur");
+            b.HasIndex(l => new { l.PerusahaanId, l.KaryawanId, l.TanggalLembur });
+            b.HasIndex(l => new { l.PerusahaanId, l.Status });
+            b.HasOne(l => l.Karyawan)
+                .WithMany(k => k.DaftarPengajuanLembur)
+                .HasForeignKey(l => l.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(l => l.DisetujuiOleh)
+                .WithMany()
+                .HasForeignKey(l => l.DisetujuiOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Konfigurasi Tabel JenisCuti
+        builder.Entity<JenisCuti>(b =>
+        {
+            b.ToTable("JenisCuti");
+            b.HasIndex(jc => new { jc.PerusahaanId, jc.KodeJenisCuti }).IsUnique();
+        });
+
+        // Konfigurasi Tabel SaldoCuti
+        builder.Entity<SaldoCuti>(b =>
+        {
+            b.ToTable("SaldoCuti");
+            b.HasIndex(sc => new { sc.PerusahaanId, sc.KaryawanId, sc.JenisCutiId, sc.PeriodeTahun }).IsUnique();
+            b.HasOne(sc => sc.Karyawan)
+                .WithMany(k => k.DaftarSaldoCuti)
+                .HasForeignKey(sc => sc.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(sc => sc.JenisCuti)
+                .WithMany(jc => jc.DaftarSaldoCuti)
+                .HasForeignKey(sc => sc.JenisCutiId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Konfigurasi Tabel PengajuanCuti
+        builder.Entity<PengajuanCuti>(b =>
+        {
+            b.ToTable("PengajuanCuti");
+            b.HasIndex(pc => new { pc.PerusahaanId, pc.KaryawanId });
+            b.HasIndex(pc => new { pc.PerusahaanId, pc.Status });
+            b.HasOne(pc => pc.Karyawan)
+                .WithMany(k => k.DaftarPengajuanCuti)
+                .HasForeignKey(pc => pc.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(pc => pc.JenisCuti)
+                .WithMany(jc => jc.DaftarPengajuanCuti)
+                .HasForeignKey(pc => pc.JenisCutiId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Konfigurasi Tabel PersetujuanCuti
+        builder.Entity<PersetujuanCuti>(b =>
+        {
+            b.ToTable("PersetujuanCuti");
+            b.HasIndex(ap => new { ap.PerusahaanId, ap.PengajuanCutiId });
+            b.HasOne(ap => ap.PengajuanCuti)
+                .WithMany(pc => pc.DaftarPersetujuan)
+                .HasForeignKey(ap => ap.PengajuanCutiId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(ap => ap.Penyetuju)
+                .WithMany()
+                .HasForeignKey(ap => ap.PenyetujuId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         // Global Query Filter untuk Entitas Manajemen Karyawan (Soft Delete & Tenant Isolation)
         builder.Entity<Departemen>().HasQueryFilter(d =>
             !d.IsDeleted &&
@@ -242,6 +371,165 @@ public class KonteksAplikasi : IdentityDbContext<Pengguna, Peran, Guid>
         builder.Entity<RiwayatPekerjaan>().HasQueryFilter(r =>
             !r.IsDeleted &&
             (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || r.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        // Global Query Filter untuk Modul Kehadiran & Cuti
+        builder.Entity<ShiftKerja>().HasQueryFilter(s =>
+            !s.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || s.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<JadwalKerja>().HasQueryFilter(jk =>
+            !jk.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || jk.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<Kehadiran>().HasQueryFilter(kh =>
+            !kh.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || kh.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<PengajuanLembur>().HasQueryFilter(l =>
+            !l.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || l.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<JenisCuti>().HasQueryFilter(jc =>
+            !jc.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || jc.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<SaldoCuti>().HasQueryFilter(sc =>
+            !sc.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || sc.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<PengajuanCuti>().HasQueryFilter(pc =>
+            !pc.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || pc.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<PersetujuanCuti>().HasQueryFilter(ap =>
+            !ap.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || ap.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        // Konfigurasi Tabel KomponenGaji
+        builder.Entity<KomponenGaji>(b =>
+        {
+            b.ToTable("KomponenGaji");
+            b.HasIndex(k => new { k.PerusahaanId, k.KodeKomponen }).IsUnique();
+            b.HasIndex(k => new { k.PerusahaanId, k.Jenis });
+        });
+
+        // Konfigurasi Tabel GajiKaryawan
+        builder.Entity<GajiKaryawan>(b =>
+        {
+            b.ToTable("GajiKaryawan");
+            b.HasIndex(g => new { g.PerusahaanId, g.KaryawanId, g.KomponenGajiId }).IsUnique();
+            b.HasOne(g => g.Karyawan)
+                .WithMany(k => k.DaftarGajiKaryawan)
+                .HasForeignKey(g => g.KaryawanId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(g => g.KomponenGaji)
+                .WithMany(k => k.DaftarGajiKaryawan)
+                .HasForeignKey(g => g.KomponenGajiId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Konfigurasi Tabel KebijakanPenggajianPerusahaan
+        builder.Entity<KebijakanPenggajianPerusahaan>(b =>
+        {
+            b.ToTable("KebijakanPenggajianPerusahaan");
+            b.HasIndex(k => k.PerusahaanId).IsUnique();
+        });
+
+        // Konfigurasi Tabel PeriodePenggajian
+        builder.Entity<PeriodePenggajian>(b =>
+        {
+            b.ToTable("PeriodePenggajian");
+            b.HasIndex(p => new { p.PerusahaanId, p.Bulan, p.Tahun }).IsUnique();
+            b.HasOne(p => p.DiajukanOleh)
+                .WithMany()
+                .HasForeignKey(p => p.DiajukanOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+            b.HasOne(p => p.DisetujuiOleh)
+                .WithMany()
+                .HasForeignKey(p => p.DisetujuiOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Konfigurasi Tabel Penggajian (Header Payroll)
+        builder.Entity<Penggajian>(b =>
+        {
+            b.ToTable("Penggajian");
+            b.HasIndex(p => new { p.PeriodePenggajianId, p.KaryawanId }).IsUnique();
+            b.HasIndex(p => new { p.PerusahaanId, p.KaryawanId });
+            b.HasIndex(p => new { p.PerusahaanId, p.NomorSlipGaji });
+            b.HasOne(p => p.PeriodePenggajian)
+                .WithMany(pp => pp.DaftarPenggajian)
+                .HasForeignKey(p => p.PeriodePenggajianId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(p => p.Karyawan)
+                .WithMany(k => k.DaftarPenggajian)
+                .HasForeignKey(p => p.KaryawanId)
+                .OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(p => p.DisetujuiOleh)
+                .WithMany()
+                .HasForeignKey(p => p.DisetujuiOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Konfigurasi Tabel DetailPenggajian (Snapshot Komponen Payroll)
+        builder.Entity<DetailPenggajian>(b =>
+        {
+            b.ToTable("DetailPenggajian");
+            b.HasIndex(d => new { d.PenggajianId, d.Jenis });
+            b.HasOne(d => d.Penggajian)
+                .WithMany(p => p.DaftarDetailPenggajian)
+                .HasForeignKey(d => d.PenggajianId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(d => d.KomponenGaji)
+                .WithMany(k => k.DaftarDetailPenggajian)
+                .HasForeignKey(d => d.KomponenGajiId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Konfigurasi Tabel SlipGaji
+        builder.Entity<SlipGaji>(b =>
+        {
+            b.ToTable("SlipGaji");
+            b.HasIndex(s => s.PenggajianId).IsUnique();
+            b.HasIndex(s => new { s.PerusahaanId, s.NomorSlipGaji }).IsUnique();
+            b.HasOne(s => s.Penggajian)
+                .WithOne(p => p.SlipGaji)
+                .HasForeignKey<SlipGaji>(s => s.PenggajianId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(s => s.DiterbitkanOleh)
+                .WithMany()
+                .HasForeignKey(s => s.DiterbitkanOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Global Query Filter Modul Penggajian
+        builder.Entity<KomponenGaji>().HasQueryFilter(k =>
+            !k.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || k.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<GajiKaryawan>().HasQueryFilter(g =>
+            !g.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || g.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<KebijakanPenggajianPerusahaan>().HasQueryFilter(k =>
+            !k.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || k.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<PeriodePenggajian>().HasQueryFilter(p =>
+            !p.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || p.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<Penggajian>().HasQueryFilter(p =>
+            !p.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || p.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<DetailPenggajian>().HasQueryFilter(d =>
+            !d.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || d.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+
+        builder.Entity<SlipGaji>().HasQueryFilter(s =>
+            !s.IsDeleted &&
+            (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || s.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -57,15 +57,15 @@
                 <i data-lucide="briefcase"></i>
                 <span>Jabatan</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Kehadiran" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kehadiran" && ViewContext.RouteData.Values["action"]?.ToString() != "Presensi" ? "active" : "")">
                 <i data-lucide="calendar-check"></i>
                 <span>Kehadiran & Presensi</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Cuti" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cuti" && ViewContext.RouteData.Values["action"]?.ToString() != "Pengajuan" ? "active" : "")">
                 <i data-lucide="plane"></i>
                 <span>Manajemen Cuti</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Penggajian" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Penggajian" && ViewContext.RouteData.Values["action"]?.ToString() != "Riwayat" ? "active" : "")">
                 <i data-lucide="banknote"></i>
                 <span>Penggajian (Payroll)</span>
             </a>
@@ -82,11 +82,11 @@
         @if (User.IsInRole(NamaPeran.Manager) && !User.IsInRole(NamaPeran.SuperAdmin) && !User.IsInRole(NamaPeran.HRD))
         {
             <div class="menu-category">Manajemen Tim</div>
-            <a href="#" class="nav-link-item">
-                <i data-lucide="users"></i>
-                <span>Anggota Tim</span>
+            <a asp-controller="Kehadiran" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kehadiran" ? "active" : "")">
+                <i data-lucide="calendar-check"></i>
+                <span>Kehadiran Tim</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Cuti" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cuti" ? "active" : "")">
                 <i data-lucide="check-square"></i>
                 <span>Persetujuan Cuti/Lembur</span>
             </a>
@@ -99,26 +99,26 @@
         @if (User.IsInRole(NamaPeran.Finance) && !User.IsInRole(NamaPeran.SuperAdmin))
         {
             <div class="menu-category">Keuangan</div>
-            <a href="#" class="nav-link-item">
-                <i data-lucide="wallet"></i>
-                <span>Proses Gaji</span>
-            </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Kehadiran" asp-action="Rekap" class="nav-link-item">
                 <i data-lucide="file-spreadsheet"></i>
-                <span>Rekapitulasi Transfer</span>
+                <span>Rekap Absensi Payroll</span>
+            </a>
+            <a asp-controller="Penggajian" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Penggajian" && ViewContext.RouteData.Values["action"]?.ToString() != "Riwayat" ? "active" : "")">
+                <i data-lucide="wallet"></i>
+                <span>Penggajian (Payroll)</span>
             </a>
         }
 
         <div class="menu-category">Employee Self Service</div>
-        <a href="#" class="nav-link-item">
+        <a asp-controller="Kehadiran" asp-action="Presensi" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kehadiran" && ViewContext.RouteData.Values["action"]?.ToString() == "Presensi" ? "active" : "")">
             <i data-lucide="clock"></i>
             <span>Presensi Harian</span>
         </a>
-        <a href="#" class="nav-link-item">
+        <a asp-controller="Cuti" asp-action="Pengajuan" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Cuti" && ViewContext.RouteData.Values["action"]?.ToString() == "Pengajuan" ? "active" : "")">
             <i data-lucide="send"></i>
             <span>Pengajuan Cuti</span>
         </a>
-        <a href="#" class="nav-link-item">
+        <a asp-controller="Penggajian" asp-action="Riwayat" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Penggajian" && ViewContext.RouteData.Values["action"]?.ToString() == "Riwayat" ? "active" : "")">
             <i data-lucide="receipt"></i>
             <span>Slip Gaji Saya</span>
         </a>

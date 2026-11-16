@@ -1,0 +1,288 @@
+@model SistemHRD.ViewModels.DaftarPengajuanCutiViewModel
+@using SistemHRD.Common.Constants
+@using SistemHRD.Models.Enums
+
+@{
+    ViewData["Title"] = "Manajemen Cuti & Perizinan";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="h3 fw-bold text-slate-800 mb-1">Manajemen Cuti & Perizinan</h1>
+        <p class="text-muted small mb-0">Kelola permohonan cuti, proses persetujuan bertingkat, dan pantau kuota saldo cuti tahunan.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Pengajuan" class="btn btn-emerald d-inline-flex align-items-center gap-2">
+            <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+            <span>Ajukan Cuti Baru</span>
+        </a>
+        @if (User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD))
+        {
+            <a asp-action="SaldoCuti" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i data-lucide="calculator" style="width: 18px; height: 18px;"></i>
+                <span>Saldo Cuti</span>
+            </a>
+            <a asp-action="JenisCuti" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
+                <span>Master Jenis Cuti</span>
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Widget Saldo Cuti Pribadi (Jika Karyawan) -->
+@if (Model.SaldoCutiPribadi.HasValue)
+{
+    <div class="card border-0 shadow-sm mb-4 bg-light">
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <span class="text-muted small fw-semibold text-uppercase font-monospace">Saldo Cuti Tahunan Anda</span>
+                    <div class="h4 fw-bold text-slate-800 mb-0">Tahun @DateTime.Today.Year</div>
+                </div>
+                <div class="col-md-3 text-center border-start">
+                    <span class="text-muted small">Total Hak Cuti</span>
+                    <div class="h4 fw-bold text-slate-700 mb-0">@Model.SaldoCutiPribadi hari</div>
+                </div>
+                <div class="col-md-3 text-center border-start">
+                    <span class="text-muted small">Cuti Terpakai</span>
+                    <div class="h4 fw-bold text-warning mb-0">@Model.CutiTerpakaiPribadi hari</div>
+                </div>
+                <div class="col-md-3 text-center border-start">
+                    <span class="text-muted small">Sisa Hak Cuti</span>
+                    <div class="h4 fw-bold text-emerald mb-0">@Model.SisaCutiPribadi hari</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Kartu Antrean Persetujuan -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-warning shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-medium">Menunggu Manager</span>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning rounded p-1">
+                    <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-slate-800 mb-0">@Model.TotalMenungguManager</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-info shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-medium">Menunggu HRD</span>
+                <div class="stat-icon bg-info bg-opacity-10 text-info rounded p-1">
+                    <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-slate-800 mb-0">@Model.TotalMenungguHRD</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-emerald shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-medium">Disetujui</span>
+                <div class="stat-icon bg-emerald-light text-emerald rounded p-1">
+                    <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-slate-800 mb-0">@Model.TotalDisetujui</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-danger shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-medium">Ditolak</span>
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger rounded p-1">
+                    <i data-lucide="x-circle" style="width: 18px; height: 18px;"></i>
+                </div>
+            </div>
+            <div class="h3 fw-bold text-slate-800 mb-0">@Model.TotalDitolak</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted">Status</label>
+                <select name="Status" class="form-select form-select-sm">
+                    <option value="">-- Semua Status --</option>
+                    <option value="1" selected="@(Model.Filter.Status == StatusPengajuanCuti.MenungguPersetujuanManager)">Menunggu Persetujuan Manager</option>
+                    <option value="2" selected="@(Model.Filter.Status == StatusPengajuanCuti.DisetujuiManager)">Disetujui Manager / Menunggu HRD</option>
+                    <option value="3" selected="@(Model.Filter.Status == StatusPengajuanCuti.Disetujui)">Disetujui (Selesai)</option>
+                    <option value="4" selected="@(Model.Filter.Status == StatusPengajuanCuti.Ditolak)">Ditolak</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted">Jenis Cuti</label>
+                <select name="JenisCutiId" asp-items="ViewBag.DaftarJenisCuti" class="form-select form-select-sm">
+                    <option value="">-- Semua Jenis Cuti --</option>
+                </select>
+            </div>
+            @if (!User.IsInRole(NamaPeran.Karyawan))
+            {
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Departemen</label>
+                    <select name="DepartemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select form-select-sm">
+                        <option value="">-- Semua Departemen --</option>
+                    </select>
+                </div>
+            }
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted">Cari</label>
+                <input type="text" name="Cari" class="form-control form-control-sm" placeholder="No. Pengajuan / Nama..." value="@Model.Filter.Cari" />
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-emerald w-100" title="Terapkan Filter">
+                    <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
+                </button>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="Reset Filter">
+                    <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabel Pengajuan Cuti -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-3 py-3">No. Pengajuan</th>
+                        <th>Karyawan</th>
+                        <th>Jenis Cuti</th>
+                        <th>Tanggal Cuti</th>
+                        <th>Durasi</th>
+                        <th>Alasan</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @if (Model.DaftarPengajuan.Any())
+                    {
+                        foreach (var item in Model.DaftarPengajuan)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold text-emerald">
+                                    <a asp-action="Detail" asp-route-id="@item.Id" class="text-decoration-none text-emerald">
+                                        @item.NomorPengajuan
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-slate-800">@item.NamaKaryawan</div>
+                                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.75rem;">@item.NomorIndukKaryawan</span>
+                                </td>
+                                <td>
+                                    <span class="fw-medium text-slate-800">@item.NamaJenisCuti</span>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-slate-800">
+                                        @item.TanggalMulai.ToString("dd MMM yyyy")
+                                        @if (item.TanggalMulai.Date != item.TanggalSelesai.Date)
+                                        {
+                                            <span> s/d @item.TanggalSelesai.ToString("dd MMM yyyy")</span>
+                                        }
+                                    </div>
+                                    <small class="text-muted">Diajukan: @item.TanggalDiajukan.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace fw-bold">@item.JumlahHari Hari</span>
+                                </td>
+                                <td class="small text-slate-600" style="max-width: 200px;">
+                                    <div class="text-truncate">@item.Alasan</div>
+                                </td>
+                                <td>
+                                    @switch (item.Status)
+                                    {
+                                        case StatusPengajuanCuti.MenungguPersetujuanManager:
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Menunggu Manager</span>
+                                            break;
+                                        case StatusPengajuanCuti.DisetujuiManager:
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">Menunggu HRD</span>
+                                            break;
+                                        case StatusPengajuanCuti.Disetujui:
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Disetujui</span>
+                                            break;
+                                        case StatusPengajuanCuti.Ditolak:
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Ditolak</span>
+                                            break;
+                                        case StatusPengajuanCuti.Dibatalkan:
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-1">Dibatalkan</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="Detail" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                        <span>Detail</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i data-lucide="calendar-x-2" style="width: 48px; height: 48px; opacity: 0.3;" class="mb-2"></i>
+                                <p class="mb-0 fw-medium">Belum ada pengajuan cuti yang tercatat.</p>
+                                <small class="text-muted">Klik 'Ajukan Cuti Baru' untuk membuat permohonan cuti baru.</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginasi -->
+    @if (Model.TotalHalaman > 1)
+    {
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="small text-muted">
+                Halaman @Model.HalamanSaatIni dari @Model.TotalHalaman (Total @Model.TotalItem data)
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.HalamanSaatIni == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-Halaman="@(Model.HalamanSaatIni - 1)"
+                           asp-route-Status="@((int?)Model.Filter.Status)"
+                           asp-route-JenisCutiId="@Model.Filter.JenisCutiId"
+                           asp-route-DepartemenId="@Model.Filter.DepartemenId"
+                           asp-route-Cari="@Model.Filter.Cari">Sebelumnya</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalHalaman; p++)
+                    {
+                        <li class="page-item @(p == Model.HalamanSaatIni ? "active" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-Halaman="@p"
+                               asp-route-Status="@((int?)Model.Filter.Status)"
+                               asp-route-JenisCutiId="@Model.Filter.JenisCutiId"
+                               asp-route-DepartemenId="@Model.Filter.DepartemenId"
+                               asp-route-Cari="@Model.Filter.Cari">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.HalamanSaatIni == Model.TotalHalaman ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-Halaman="@(Model.HalamanSaatIni + 1)"
+                           asp-route-Status="@((int?)Model.Filter.Status)"
+                           asp-route-JenisCutiId="@Model.Filter.JenisCutiId"
+                           asp-route-DepartemenId="@Model.Filter.DepartemenId"
+                           asp-route-Cari="@Model.Filter.Cari">Selanjutnya</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

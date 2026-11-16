@@ -1,0 +1,158 @@
+@model List<SistemHRD.Models.Entitas.JenisCuti>
+
+@{
+    ViewData["Title"] = "Master Jenis Cuti";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="h3 fw-bold text-slate-800 mb-1">Master Jenis Cuti</h1>
+        <p class="text-muted small mb-0">Atur jenis hak cuti, kuota hari tahunan, dan kebijakan pemotongan saldo cuti.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-emerald d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalTambahJenisCuti">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Tambah Jenis Cuti</span>
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            <span>Kembali</span>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-3 py-3">Kode</th>
+                        <th>Nama Jenis Cuti</th>
+                        <th>Jatah Kuota</th>
+                        <th>Potong Saldo Tahunan</th>
+                        <th>Wajib Berkas Lampiran</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                        <th class="text-end pe-3">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @if (Model.Any())
+                    {
+                        foreach (var jc in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold text-emerald">@jc.KodeJenisCuti</td>
+                                <td class="fw-bold text-slate-800">@jc.NamaJenisCuti</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace">@jc.JatahHariPerTahun Hari/Tahun</span>
+                                </td>
+                                <td>
+                                    @if (jc.PotongCutiTahunan)
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-25">Ya (Potong Saldo)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border">Tidak</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (jc.WajibLampiran)
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">Wajib Unggah</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border">Opsional</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (jc.StatusAktif)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-1">Nonaktif</span>
+                                    }
+                                </td>
+                                <td class="small text-muted">@(jc.Keterangan ?? "-")</td>
+                                <td class="text-end pe-3">
+                                    <form asp-action="HapusJenisCuti" asp-route-id="@jc.Id" method="post" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jenis cuti @jc.NamaJenisCuti?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Jenis Cuti">
+                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                Belum ada master jenis cuti terdaftar.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Jenis Cuti -->
+<div class="modal fade" id="modalTambahJenisCuti" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="SimpanJenisCuti" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-slate-800">Tambah Jenis Cuti Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Kode Jenis Cuti <span class="text-danger">*</span></label>
+                            <input type="text" name="KodeJenisCuti" class="form-control" placeholder="Contoh: CT-THN" required maxlength="20" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Nama Jenis Cuti <span class="text-danger">*</span></label>
+                            <input type="text" name="NamaJenisCuti" class="form-control" placeholder="Contoh: Cuti Tahunan" required maxlength="100" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Jatah Hari Per Tahun</label>
+                            <input type="number" name="JatahHariPerTahun" class="form-control" value="12" min="1" max="365" required />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Keterangan / Kebijakan</label>
+                            <textarea name="Keterangan" class="form-control" rows="2" placeholder="Ketentuan khusus permohonan jenis cuti ini..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="PotongCutiTahunan" value="true" id="potongCuti" checked />
+                                <label class="form-check-label fw-semibold small" for="potongCuti">Memotong Saldo Cuti Tahunan Karyawan</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="WajibLampiran" value="true" id="wajibLampiran" />
+                                <label class="form-check-label fw-semibold small" for="wajibLampiran">Wajib Unggah Dokumen Pendukung (misal: Surat Dokter)</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="StatusAktif" value="true" id="statusAktif" checked />
+                                <label class="form-check-label fw-semibold small" for="statusAktif">Status Aktif</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Simpan Jenis Cuti</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

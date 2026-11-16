@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SistemHRD.Common.Constants;
 using SistemHRD.Models.Entitas;
+using SistemHRD.Models.Enums;
 
 namespace SistemHRD.Data;
 
@@ -148,6 +149,9 @@ public static class InisialisasiData
 
         // 10. Inisialisasi Data Master Departemen, Jabatan, dan Karyawan Contoh
         await InisialisasiDataKaryawanAsync(context, perusahaan1.Id, perusahaan2.Id);
+
+        // 11. Inisialisasi Data Modul Kehadiran dan Cuti (Shift, Jenis Cuti, Saldo Cuti)
+        await InisialisasiDataKehadiranDanCutiAsync(context, perusahaan1.Id, perusahaan2.Id);
     }
 
     private static async Task InisialisasiDataKaryawanAsync(KonteksAplikasi context, Guid perusahaanId1, Guid perusahaanId2)
@@ -492,5 +496,508 @@ public static class InisialisasiData
         }
 
         return user;
+    }
+
+    private static async Task InisialisasiDataKehadiranDanCutiAsync(KonteksAplikasi context, Guid perusahaanId1, Guid perusahaanId2)
+    {
+        // 1. Inisialisasi Shift Kerja Perusahaan 1
+        var shiftReg1 = await context.ShiftKerja
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.PerusahaanId == perusahaanId1 && s.KodeShift == "REG");
+
+        if (shiftReg1 == null)
+        {
+            shiftReg1 = new ShiftKerja
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NamaShift = "Shift Pagi (Regular)",
+                KodeShift = "REG",
+                JamMasuk = new TimeSpan(8, 0, 0),
+                JamPulang = new TimeSpan(17, 0, 0),
+                ToleransiKeterlambatanMenit = 15,
+                Keterangan = "Jam kerja standar operasional kantor (08:00 - 17:00)",
+                StatusAktif = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.ShiftKerja.AddAsync(shiftReg1);
+        }
+
+        var shiftSiang1 = await context.ShiftKerja
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.PerusahaanId == perusahaanId1 && s.KodeShift == "SIANG");
+
+        if (shiftSiang1 == null)
+        {
+            shiftSiang1 = new ShiftKerja
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NamaShift = "Shift Siang",
+                KodeShift = "SIANG",
+                JamMasuk = new TimeSpan(13, 0, 0),
+                JamPulang = new TimeSpan(21, 0, 0),
+                ToleransiKeterlambatanMenit = 15,
+                Keterangan = "Shift operasional siang (13:00 - 21:00)",
+                StatusAktif = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.ShiftKerja.AddAsync(shiftSiang1);
+        }
+
+        // Shift Perusahaan 2
+        var shiftReg2 = await context.ShiftKerja
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.PerusahaanId == perusahaanId2 && s.KodeShift == "MBD-REG");
+
+        if (shiftReg2 == null)
+        {
+            shiftReg2 = new ShiftKerja
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId2,
+                NamaShift = "Shift Regular Digital",
+                KodeShift = "MBD-REG",
+                JamMasuk = new TimeSpan(8, 30, 0),
+                JamPulang = new TimeSpan(17, 30, 0),
+                ToleransiKeterlambatanMenit = 15,
+                Keterangan = "Jam operasional kantor kreatif (08:30 - 17:30)",
+                StatusAktif = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.ShiftKerja.AddAsync(shiftReg2);
+        }
+
+        await context.SaveChangesAsync();
+
+        // 2. Inisialisasi Jenis Cuti Perusahaan 1
+        var jenisCutiList1 = new[]
+        {
+            new { Kode = "CT-THN", Nama = "Cuti Tahunan", Jatah = 12, Potong = true, Lampiran = false, Ket = "Hak cuti tahunan reguler karyawan" },
+            new { Kode = "CT-SKT", Nama = "Cuti Sakit", Jatah = 14, Potong = false, Lampiran = true, Ket = "Cuti alasan medis dengan surat keterangan dokter" },
+            new { Kode = "CT-MLH", Nama = "Cuti Melahirkan", Jatah = 90, Potong = false, Lampiran = true, Ket = "Hak cuti bersalin bagi karyawati" },
+            new { Kode = "CT-NIKAH", Nama = "Cuti Menikah", Jatah = 3, Potong = false, Lampiran = false, Ket = "Cuti khusus pernikahan karyawan" },
+            new { Kode = "CT-DUKA", Nama = "Cuti Duka Cita", Jatah = 2, Potong = false, Lampiran = false, Ket = "Cuti kedukaan anggota keluarga inti" }
+        };
+
+        foreach (var jc in jenisCutiList1)
+        {
+            var ada = await context.JenisCuti
+                .IgnoreQueryFilters()
+                .AnyAsync(j => j.PerusahaanId == perusahaanId1 && j.KodeJenisCuti == jc.Kode);
+
+            if (!ada)
+            {
+                await context.JenisCuti.AddAsync(new JenisCuti
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    KodeJenisCuti = jc.Kode,
+                    NamaJenisCuti = jc.Nama,
+                    JatahHariPerTahun = jc.Jatah,
+                    PotongCutiTahunan = jc.Potong,
+                    WajibLampiran = jc.Lampiran,
+                    Keterangan = jc.Ket,
+                    StatusAktif = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        // Inisialisasi Jenis Cuti Perusahaan 2
+        var adaJc2 = await context.JenisCuti
+            .IgnoreQueryFilters()
+            .AnyAsync(j => j.PerusahaanId == perusahaanId2 && j.KodeJenisCuti == "CT-THN");
+
+        if (!adaJc2)
+        {
+            await context.JenisCuti.AddAsync(new JenisCuti
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId2,
+                KodeJenisCuti = "CT-THN",
+                NamaJenisCuti = "Cuti Tahunan",
+                JatahHariPerTahun = 12,
+                PotongCutiTahunan = true,
+                WajibLampiran = false,
+                Keterangan = "Hak cuti tahunan PT Maju Bersama Digital",
+                StatusAktif = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
+        await context.SaveChangesAsync();
+
+        // 3. Tautkan Akun Karyawan dan Manager ke Profil Karyawan (ESS)
+        var userKry1 = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == "karyawan@solusihr.id");
+
+        var kry1 = await context.Karyawan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(k => k.PerusahaanId == perusahaanId1 && k.NomorIndukKaryawan == "KRY-2026-001");
+
+        if (userKry1 != null && kry1 != null && kry1.PenggunaId == null)
+        {
+            kry1.PenggunaId = userKry1.Id;
+            context.Karyawan.Update(kry1);
+            await context.SaveChangesAsync();
+        }
+
+        var userMgr1 = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == "manager@solusihr.id");
+
+        var kryMgr1 = await context.Karyawan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(k => k.PerusahaanId == perusahaanId1 && k.Email == "manager@solusihr.id");
+
+        var deptIT1 = await context.Departemen
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.PerusahaanId == perusahaanId1 && d.KodeDepartemen == "IT");
+
+        var jabIT1 = await context.Jabatan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(j => j.PerusahaanId == perusahaanId1 && j.NamaJabatan == "Senior Software Engineer");
+
+        if (kryMgr1 == null && userMgr1 != null && deptIT1 != null && jabIT1 != null)
+        {
+            kryMgr1 = new Karyawan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NomorIndukKaryawan = "KRY-2026-002",
+                NamaLengkap = "Ahmad Fauzi",
+                TempatLahir = "Surabaya",
+                TanggalLahir = new DateTime(1990, 3, 10),
+                JenisKelamin = Models.Enums.JenisKelamin.LakiLaki,
+                Alamat = "Jl. Gatot Subroto No. 88, Jakarta Selatan",
+                NomorTelepon = "081398765432",
+                Email = "manager@solusihr.id",
+                TanggalMasuk = new DateTime(2022, 1, 15),
+                DepartemenId = deptIT1.Id,
+                JabatanId = jabIT1.Id,
+                StatusKaryawan = Models.Enums.StatusKaryawan.Tetap,
+                PenggunaId = userMgr1.Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.Karyawan.AddAsync(kryMgr1);
+            await context.SaveChangesAsync();
+        }
+
+        // Tautkan Karyawan Perusahaan 2
+        var userHrd2 = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == "hrd2@majubersama.id");
+
+        var kry2 = await context.Karyawan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(k => k.PerusahaanId == perusahaanId2 && k.NomorIndukKaryawan == "MBD-2026-001");
+
+        if (userHrd2 != null && kry2 != null && kry2.PenggunaId == null)
+        {
+            kry2.PenggunaId = userHrd2.Id;
+            context.Karyawan.Update(kry2);
+            await context.SaveChangesAsync();
+        }
+
+        // 4. Inisialisasi Saldo Cuti 2026
+        var jenisCutiTahunan1 = await context.JenisCuti
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(j => j.PerusahaanId == perusahaanId1 && j.KodeJenisCuti == "CT-THN");
+
+        if (jenisCutiTahunan1 != null && kry1 != null)
+        {
+            var adaSaldo1 = await context.SaldoCuti
+                .IgnoreQueryFilters()
+                .AnyAsync(s => s.PerusahaanId == perusahaanId1 && s.KaryawanId == kry1.Id && s.JenisCutiId == jenisCutiTahunan1.Id && s.PeriodeTahun == 2026);
+
+            if (!adaSaldo1)
+            {
+                await context.SaldoCuti.AddAsync(new SaldoCuti
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    KaryawanId = kry1.Id,
+                    JenisCutiId = jenisCutiTahunan1.Id,
+                    PeriodeTahun = 2026,
+                    JumlahHakCuti = 12,
+                    CutiTerpakai = 0,
+                    SisaCuti = 12,
+                    Catatan = "Hak cuti tahunan periode 2026",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        var jenisCutiTahunan2 = await context.JenisCuti
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(j => j.PerusahaanId == perusahaanId2 && j.KodeJenisCuti == "CT-THN");
+
+        if (jenisCutiTahunan2 != null && kry2 != null)
+        {
+            var adaSaldo2 = await context.SaldoCuti
+                .IgnoreQueryFilters()
+                .AnyAsync(s => s.PerusahaanId == perusahaanId2 && s.KaryawanId == kry2.Id && s.JenisCutiId == jenisCutiTahunan2.Id && s.PeriodeTahun == 2026);
+
+            if (!adaSaldo2)
+            {
+                await context.SaldoCuti.AddAsync(new SaldoCuti
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId2,
+                    KaryawanId = kry2.Id,
+                    JenisCutiId = jenisCutiTahunan2.Id,
+                    PeriodeTahun = 2026,
+                    JumlahHakCuti = 12,
+                    CutiTerpakai = 0,
+                    SisaCuti = 12,
+                    Catatan = "Hak cuti tahunan periode 2026",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        // 14. Inisialisasi Modul Penggajian (Kebijakan, Komponen Gaji, & Gaji Karyawan)
+        await InisialisasiModulPenggajianAsync(context, perusahaanId1, perusahaanId2, kry1, kry2);
+    }
+
+    private static async Task InisialisasiModulPenggajianAsync(
+        KonteksAplikasi context,
+        Guid perusahaanId1,
+        Guid perusahaanId2,
+        Karyawan? kry1,
+        Karyawan? kry2)
+    {
+        // 1. Kebijakan Penggajian Perusahaan 1
+        var adaKebijakan1 = await context.KebijakanPenggajianPerusahaan
+            .IgnoreQueryFilters()
+            .AnyAsync(k => k.PerusahaanId == perusahaanId1);
+
+        if (!adaKebijakan1)
+        {
+            await context.KebijakanPenggajianPerusahaan.AddAsync(new KebijakanPenggajianPerusahaan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                HitungLemburOtomatis = true,
+                TarifLemburPerJamFlat = 0,
+                TerapkanPotonganKeterlambatan = true,
+                ToleransiKeterlambatanGratisMenit = 15,
+                DendaKeterlambatanPerMenit = 1000,
+                TerapkanBpjsKesehatan = true,
+                PersenBpjsKesehatanPerusahaan = 4.00m,
+                PersenBpjsKesehatanPekerja = 1.00m,
+                BatasMaksimalUpahBpjsKesehatan = 12000000m,
+                TerapkanBpjsKetenagakerjaan = true,
+                PersenBpjsJhtPerusahaan = 3.70m,
+                PersenBpjsJhtPekerja = 2.00m,
+                PersenBpjsJpPerusahaan = 2.00m,
+                PersenBpjsJpPekerja = 1.00m,
+                BatasMaksimalUpahBpjsJp = 10042300m,
+                PersenBpjsJkkPerusahaan = 0.24m,
+                PersenBpjsJkmPerusahaan = 0.30m,
+                TerapkanPph21 = true,
+                MetodePph21 = MetodePajakPPh21.TER_PP58,
+                TanggalCutoffAwal = 26,
+                TanggalCutoffAkhir = 25,
+                TanggalPembayaranGaji = 28,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
+        // Kebijakan Perusahaan 2
+        var adaKebijakan2 = await context.KebijakanPenggajianPerusahaan
+            .IgnoreQueryFilters()
+            .AnyAsync(k => k.PerusahaanId == perusahaanId2);
+
+        if (!adaKebijakan2)
+        {
+            await context.KebijakanPenggajianPerusahaan.AddAsync(new KebijakanPenggajianPerusahaan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId2,
+                HitungLemburOtomatis = true,
+                TarifLemburPerJamFlat = 0,
+                TerapkanPotonganKeterlambatan = false,
+                ToleransiKeterlambatanGratisMenit = 30,
+                DendaKeterlambatanPerMenit = 0,
+                TerapkanBpjsKesehatan = true,
+                TerapkanBpjsKetenagakerjaan = true,
+                TerapkanPph21 = true,
+                MetodePph21 = MetodePajakPPh21.TER_PP58,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
+        // 2. Master Komponen Gaji Perusahaan 1
+        var komponenBaku = new (string Kode, string Nama, JenisKomponenGaji Jenis, SifatKomponenGaji Sifat, KategoriKomponenGaji Kategori, decimal Nilai, bool KenaPajak, bool MasukBpjs, bool AutoSistem)[]
+        {
+            ("GP", "Gaji Pokok", JenisKomponenGaji.Pendapatan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.GajiPokok, 0, true, true, false),
+            ("TJ-JAB", "Tunjangan Jabatan", JenisKomponenGaji.Pendapatan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.TunjanganTetap, 0, true, true, false),
+            ("TJ-TRN", "Tunjangan Transportasi", JenisKomponenGaji.Pendapatan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.TunjanganTetap, 0, true, false, false),
+            ("TJ-MKN", "Tunjangan Makan", JenisKomponenGaji.Pendapatan, SifatKomponenGaji.TidakTetap, KategoriKomponenGaji.TunjanganTidakTetap, 0, true, false, false),
+            ("LMBR", "Upah Lembur", JenisKomponenGaji.Pendapatan, SifatKomponenGaji.TidakTetap, KategoriKomponenGaji.UangLembur, 0, true, false, true),
+            ("BPJS-KES", "BPJS Kesehatan (Pekerja 1%)", JenisKomponenGaji.Potongan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.BpjsKesehatan, 0, false, false, true),
+            ("BPJS-TK-JHT", "BPJS JHT (Pekerja 2%)", JenisKomponenGaji.Potongan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.BpjsKetenagakerjaanJHT, 0, false, false, true),
+            ("BPJS-TK-JP", "BPJS JP (Pekerja 1%)", JenisKomponenGaji.Potongan, SifatKomponenGaji.Tetap, KategoriKomponenGaji.BpjsKetenagakerjaanJP, 0, false, false, true),
+            ("PPH21", "Pajak Penghasilan (PPh 21)", JenisKomponenGaji.Potongan, SifatKomponenGaji.TidakTetap, KategoriKomponenGaji.PajakPPh21, 0, false, false, true),
+            ("POT-TELAT", "Potongan Keterlambatan", JenisKomponenGaji.Potongan, SifatKomponenGaji.TidakTetap, KategoriKomponenGaji.PotonganKeterlambatan, 0, false, false, true)
+        };
+
+        foreach (var k in komponenBaku)
+        {
+            var ada = await context.KomponenGaji
+                .IgnoreQueryFilters()
+                .AnyAsync(kg => kg.PerusahaanId == perusahaanId1 && kg.KodeKomponen == k.Kode);
+
+            if (!ada)
+            {
+                await context.KomponenGaji.AddAsync(new KomponenGaji
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    KodeKomponen = k.Kode,
+                    NamaKomponen = k.Nama,
+                    Jenis = k.Jenis,
+                    Sifat = k.Sifat,
+                    Kategori = k.Kategori,
+                    NilaiBawaan = k.Nilai,
+                    KenaPajak = k.KenaPajak,
+                    MasukKalkulasiBpjs = k.MasukBpjs,
+                    DihitungOtomatisOlehSistem = k.AutoSistem,
+                    StatusAktif = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        // Simpan komponen gaji terlebih dahulu
+        await context.SaveChangesAsync();
+
+        // 3. Konfigurasi Gaji Karyawan Rian Pratama (Software Engineer)
+        if (kry1 != null)
+        {
+            kry1.StatusPTKP = StatusPTKP.TK0;
+            kry1.NamaBank = "Bank Central Asia (BCA)";
+            kry1.NomorRekeningBank = "8830123456";
+            kry1.NomorNPWP = "98.765.432.1-012.000";
+            kry1.NomorBpjsKesehatan = "0001234567890";
+            kry1.NomorBpjsKetenagakerjaan = "18012345678";
+            context.Karyawan.Update(kry1);
+
+            var komponenList = await context.KomponenGaji
+                .IgnoreQueryFilters()
+                .Where(kg => kg.PerusahaanId == perusahaanId1)
+                .ToListAsync();
+
+            var gp = komponenList.FirstOrDefault(k => k.KodeKomponen == "GP");
+            var tjJab = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-JAB");
+            var tjTrn = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-TRN");
+            var tjMkn = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-MKN");
+
+            var konfigurasiKry1 = new (KomponenGaji? Komponen, decimal Nominal)[]
+            {
+                (gp, 8000000m),
+                (tjJab, 1500000m),
+                (tjTrn, 500000m),
+                (tjMkn, 500000m)
+            };
+
+            foreach (var cfg in konfigurasiKry1)
+            {
+                if (cfg.Komponen == null) continue;
+                var adaGaji = await context.GajiKaryawan
+                    .IgnoreQueryFilters()
+                    .AnyAsync(g => g.PerusahaanId == perusahaanId1 && g.KaryawanId == kry1.Id && g.KomponenGajiId == cfg.Komponen.Id);
+
+                if (!adaGaji)
+                {
+                    await context.GajiKaryawan.AddAsync(new GajiKaryawan
+                    {
+                        Id = Guid.NewGuid(),
+                        PerusahaanId = perusahaanId1,
+                        KaryawanId = kry1.Id,
+                        KomponenGajiId = cfg.Komponen.Id,
+                        Nominal = cfg.Nominal,
+                        StatusAktif = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        CreatedBy = "Sistem"
+                    });
+                }
+            }
+        }
+
+        // Manager Engineering (Ahmad Fauzi)
+        var mgr1 = await context.Karyawan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(k => k.PerusahaanId == perusahaanId1 && k.Email == "manager@solusihr.id");
+
+        if (mgr1 != null)
+        {
+            mgr1.StatusPTKP = StatusPTKP.K1;
+            mgr1.NamaBank = "Bank Mandiri";
+            mgr1.NomorRekeningBank = "1370001234567";
+            mgr1.NomorNPWP = "87.654.321.0-012.000";
+            mgr1.NomorBpjsKesehatan = "0009876543210";
+            mgr1.NomorBpjsKetenagakerjaan = "18098765432";
+            context.Karyawan.Update(mgr1);
+
+            var komponenList = await context.KomponenGaji
+                .IgnoreQueryFilters()
+                .Where(kg => kg.PerusahaanId == perusahaanId1)
+                .ToListAsync();
+
+            var gp = komponenList.FirstOrDefault(k => k.KodeKomponen == "GP");
+            var tjJab = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-JAB");
+            var tjTrn = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-TRN");
+            var tjMkn = komponenList.FirstOrDefault(k => k.KodeKomponen == "TJ-MKN");
+
+            var konfigurasiMgr = new (KomponenGaji? Komponen, decimal Nominal)[]
+            {
+                (gp, 14000000m),
+                (tjJab, 4000000m),
+                (tjTrn, 1000000m),
+                (tjMkn, 1000000m)
+            };
+
+            foreach (var cfg in konfigurasiMgr)
+            {
+                if (cfg.Komponen == null) continue;
+                var adaGaji = await context.GajiKaryawan
+                    .IgnoreQueryFilters()
+                    .AnyAsync(g => g.PerusahaanId == perusahaanId1 && g.KaryawanId == mgr1.Id && g.KomponenGajiId == cfg.Komponen.Id);
+
+                if (!adaGaji)
+                {
+                    await context.GajiKaryawan.AddAsync(new GajiKaryawan
+                    {
+                        Id = Guid.NewGuid(),
+                        PerusahaanId = perusahaanId1,
+                        KaryawanId = mgr1.Id,
+                        KomponenGajiId = cfg.Komponen.Id,
+                        Nominal = cfg.Nominal,
+                        StatusAktif = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        CreatedBy = "Sistem"
+                    });
+                }
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 }

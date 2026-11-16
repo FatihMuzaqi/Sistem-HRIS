@@ -1,0 +1,118 @@
+@model SistemHRD.ViewModels.FormPengajuanCutiViewModel
+
+@{
+    ViewData["Title"] = "Form Pengajuan Cuti Baru";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 fw-bold text-slate-800 mb-1">Form Pengajuan Cuti</h1>
+                <p class="text-muted small mb-0">Isi data permohonan cuti untuk diproses melalui alur persetujuan bertingkat.</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>Kembali</span>
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Pengajuan" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Jenis Cuti <span class="text-danger">*</span></label>
+                            <select asp-for="JenisCutiId" asp-items="ViewBag.DaftarJenisCuti" class="form-select" id="selectJenisCuti" required>
+                                <option value="">-- Pilih Jenis Cuti --</option>
+                            </select>
+                            <span asp-validation-for="JenisCutiId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Tanggal Mulai Cuti <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalMulai" type="date" class="form-control" id="inputTanggalMulai" required />
+                            <span asp-validation-for="TanggalMulai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Tanggal Selesai Cuti <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalSelesai" type="date" class="form-control" id="inputTanggalSelesai" required />
+                            <span asp-validation-for="TanggalSelesai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted small">Estimasi Durasi Cuti:</span>
+                                    <div class="h5 fw-bold text-emerald mb-0" id="labelTotalHari">1 Hari Kerja</div>
+                                </div>
+                                <i data-lucide="calendar" style="width: 24px; height: 24px;" class="text-emerald"></i>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Alasan / Keperluan Cuti <span class="text-danger">*</span></label>
+                            <textarea asp-for="Alasan" class="form-control" rows="3" placeholder="Jelaskan keperluan cuti Anda secara rinci..." required maxlength="500"></textarea>
+                            <span asp-validation-for="Alasan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Alamat Selama Cuti (Opsional)</label>
+                            <input asp-for="AlamatSelamaCuti" class="form-control" placeholder="Contoh: Yogyakarta / Di rumah" maxlength="255" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Nomor Kontak Darurat</label>
+                            <input asp-for="NomorTeleponDarurat" class="form-control" placeholder="08xxxxxxxxxx" maxlength="50" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Dokumen Pendukung (Opsional / Wajib untuk Cuti Sakit & Bersalin)</label>
+                            <input asp-for="BerkasDokumen" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                            <small class="text-muted">Format: PDF, JPG, PNG, DOC/DOCX. Maksimal ukuran berkas: 5 MB.</small>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Batal</a>
+                        <button type="submit" class="btn btn-emerald px-4 fw-semibold d-inline-flex align-items-center gap-2">
+                            <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+                            <span>Kirim Pengajuan Cuti</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function hitungHari() {
+            const mulai = document.getElementById('inputTanggalMulai').value;
+            const selesai = document.getElementById('inputTanggalSelesai').value;
+            if (mulai && selesai) {
+                const d1 = new Date(mulai);
+                const d2 = new Date(selesai);
+                const diffTime = d2 - d1;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                const label = document.getElementById('labelTotalHari');
+                if (diffDays > 0) {
+                    label.textContent = `${diffDays} Hari`;
+                    label.className = "h5 fw-bold text-emerald mb-0";
+                } else {
+                    label.textContent = "Tanggal selesai tidak valid";
+                    label.className = "h5 fw-bold text-danger mb-0";
+                }
+            }
+        }
+        document.getElementById('inputTanggalMulai').addEventListener('change', hitungHari);
+        document.getElementById('inputTanggalSelesai').addEventListener('change', hitungHari);
+    </script>
+}

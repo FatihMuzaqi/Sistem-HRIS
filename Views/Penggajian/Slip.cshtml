@@ -1,0 +1,226 @@
+@model SistemHRD.ViewModels.SlipGajiViewModel
+
+@{
+    ViewData["Title"] = $"Slip Gaji - {Model.NomorSlipGaji} - {Model.NamaKaryawan}";
+    Layout = "_Layout";
+}
+
+<style>
+    @@media print {
+        body {
+            background-color: #fff !important;
+            color: #000 !important;
+            font-size: 11pt !important;
+        }
+        .sidebar, .navbar, .btn, .d-print-none, .alert, footer {
+            display: none !important;
+        }
+        .app-main, .app-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .slip-card {
+            border: 1px solid #111 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 1.5rem !important;
+        }
+        .watermark {
+            opacity: 0.08 !important;
+        }
+    }
+</style>
+
+<div class="d-print-none d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+            <span>Kembali</span>
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-emerald d-inline-flex align-items-center gap-2 shadow-sm">
+            <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
+            <span>Cetak / Unduh PDF</span>
+        </button>
+    </div>
+</div>
+
+<!-- Lembar Slip Gaji Resmi -->
+<div class="card border-0 shadow-sm slip-card p-4 p-md-5 bg-white position-relative overflow-hidden mx-auto" style="max-width: 900px;">
+    <!-- Watermark Rahasia -->
+    <div class="position-absolute top-50 start-50 translate-middle pointer-events-none watermark" style="opacity: 0.04; font-size: 8rem; font-weight: 900; transform: translate(-50%, -50%) rotate(-30deg); user-select: none; z-index: 0;">
+        CONFIDENTIAL
+    </div>
+
+    <div class="position-relative" style="z-index: 1;">
+        <!-- Kop Surat Perusahaan -->
+        <div class="row align-items-center border-bottom pb-4 mb-4">
+            <div class="col-8">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="rounded bg-emerald text-white p-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold;">
+                        HR
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-slate-800 mb-0">@Model.NamaPerusahaan</h4>
+                        <div class="text-muted small">@Model.AlamatPerusahaan &bull; Telp: @(Model.TeleponPerusahaan ?? "-")</div>
+                    </div>
+                </div>
+                <div class="text-muted small mt-1">NPWP: @(Model.NPWPPerusahaan ?? "-")</div>
+            </div>
+            <div class="col-4 text-end">
+                <span class="badge bg-emerald-light text-emerald border border-emerald border-opacity-25 px-3 py-2 text-uppercase font-monospace fw-bold">
+                    Slip Gaji Resmi
+                </span>
+                <div class="font-monospace text-slate-800 fw-bold small mt-2">@Model.NomorSlipGaji</div>
+                <div class="text-muted small" style="font-size: 0.75rem;">Kode Verifikasi: <code>@Model.KodeVerifikasi</code></div>
+            </div>
+        </div>
+
+        <!-- Judul Dokumen & Periode -->
+        <div class="text-center mb-4">
+            <h5 class="fw-bold text-slate-800 text-uppercase letter-spacing-1 mb-1">SLIP GAJI KARYAWAN (BUKTI PEMBAYARAN)</h5>
+            <div class="text-muted small">
+                Periode: <strong>@Model.NamaPeriode</strong> (Cutoff: @Model.TanggalMulaiCutoff.ToString("dd/MM/yyyy") s/d @Model.TanggalSelesaiCutoff.ToString("dd/MM/yyyy"))
+                &bull; Tanggal Pembayaran: <strong>@Model.TanggalPembayaran.ToString("dd MMMM yyyy")</strong>
+            </div>
+        </div>
+
+        <!-- Data Profil Karyawan & Presensi -->
+        <div class="row g-3 mb-4 bg-light p-3 rounded">
+            <div class="col-sm-6">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted small" style="width: 130px;">Nama Karyawan</td>
+                        <td class="fw-bold text-slate-800">: @Model.NamaKaryawan</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">NIK</td>
+                        <td class="font-monospace">: @Model.NomorIndukKaryawan</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Departemen / Posisi</td>
+                        <td>: @Model.NamaDepartemen / @Model.NamaJabatan</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-sm-6">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted small" style="width: 130px;">Status Pajak (PTKP)</td>
+                        <td>: <span class="badge bg-white text-slate-700 border font-monospace">@Model.StatusPTKP</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Rekening Transfer</td>
+                        <td class="fw-semibold">: @Model.NamaBank (@(Model.NomorRekeningBank ?? "-"))</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Presensi & Lembur</td>
+                        <td>: Hadir: <strong>@Model.JumlahHadir</strong> hr | Telat: <strong>@Model.JumlahTerlambat</strong> x | Lembur: <strong>@Model.JumlahJamLembur</strong> jam</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tabel Rincian Pendapatan & Potongan (2 Kolom Standar Korporat) -->
+        <div class="row g-4 mb-4">
+            <!-- Kolom Pendapatan (Penambah) -->
+            <div class="col-md-6">
+                <div class="border rounded h-100">
+                    <div class="bg-light p-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-slate-800 small text-uppercase">A. PENDAPATAN (EARNINGS)</span>
+                    </div>
+                    <div class="p-3">
+                        <table class="table table-sm table-borderless mb-0">
+                            @foreach (var item in Model.DaftarPendapatan)
+                            {
+                                <tr>
+                                    <td class="text-slate-700 py-1">@item.NamaKomponen</td>
+                                    <td class="text-end font-monospace py-1 fw-semibold text-slate-800">
+                                        Rp @item.Nominal.ToString("N0")
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                    <div class="border-top p-2 px-3 bg-light d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-slate-800">Total Pendapatan (A)</span>
+                        <span class="font-monospace fw-bold text-emerald">Rp @Model.TotalPendapatanKotor.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Potongan (Pengurang) -->
+            <div class="col-md-6">
+                <div class="border rounded h-100">
+                    <div class="bg-light p-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-slate-800 small text-uppercase">B. POTONGAN (DEDUCTIONS)</span>
+                    </div>
+                    <div class="p-3">
+                        <table class="table table-sm table-borderless mb-0">
+                            @if (Model.DaftarPotongan.Any())
+                            {
+                                foreach (var item in Model.DaftarPotongan)
+                                {
+                                    <tr>
+                                        <td class="text-slate-700 py-1">@item.NamaKomponen</td>
+                                        <td class="text-end font-monospace py-1 fw-semibold text-danger">
+                                            Rp @item.Nominal.ToString("N0")
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center py-2 text-muted small">Tidak ada potongan.</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                    <div class="border-top p-2 px-3 bg-light d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-slate-800">Total Potongan (B)</span>
+                        <span class="font-monospace fw-bold text-danger">Rp @Model.TotalPotongan.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kotak Total Gaji Bersih (Take Home Pay) -->
+        <div class="border-2 border-emerald rounded p-3 bg-emerald-light mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="text-slate-700 small fw-bold text-uppercase d-block mb-1">GAJI BERSIH YANG DITERIMA (TAKE HOME PAY):</span>
+                    <div class="h3 fw-bold text-emerald mb-0 font-monospace">Rp @Model.GajiBersih.ToString("N0")</div>
+                </div>
+                <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                    <span class="text-muted small d-block">Terbilang:</span>
+                    <div class="fw-semibold text-slate-800 fst-italic small">"@Model.TerbilangGajiBersih"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tanda Tangan & Footer Pengesahan -->
+        <div class="row text-center mt-5 pt-3">
+            <div class="col-4">
+                <span class="small text-muted d-block mb-5">Dibuat Oleh (Finance),</span>
+                <div class="fw-bold text-slate-800 border-top pt-1 d-inline-block" style="min-width: 140px;">Tim Payroll</div>
+            </div>
+            <div class="col-4">
+                <span class="small text-muted d-block mb-5">Mengetahui (HRD),</span>
+                <div class="fw-bold text-slate-800 border-top pt-1 d-inline-block" style="min-width: 140px;">HRD Management</div>
+            </div>
+            <div class="col-4">
+                <span class="small text-muted d-block mb-5">Diterima Oleh,</span>
+                <div class="fw-bold text-slate-800 border-top pt-1 d-inline-block" style="min-width: 140px;">@Model.NamaKaryawan</div>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top text-center text-muted small" style="font-size: 0.75rem;">
+            <em>@Model.CatatanKaki</em>
+            <div class="mt-1">Diterbitkan pada: @Model.WaktuDiterbitkan.ToString("dd MMMM yyyy HH:mm") WIB &bull; SistemHRD Smart HRIS Platform</div>
+        </div>
+    </div>
+</div>

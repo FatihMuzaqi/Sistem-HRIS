@@ -1,0 +1,92 @@
+@model SistemHRD.ViewModels.FormPeriodePenggajianViewModel
+
+@{
+    ViewData["Title"] = "Buat Periode Penggajian Baru";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 fw-bold text-slate-800 mb-1">Buat Periode Penggajian</h1>
+                <p class="text-muted small mb-0">Tentukan siklus cut-off absensi, bulan periode, dan tanggal pembayaran payroll.</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>Kembali</span>
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="TambahPeriode" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Nama Periode Penggajian <span class="text-danger">*</span></label>
+                            <input asp-for="NamaPeriode" class="form-control" placeholder="Contoh: Gaji Periode November 2026" required maxlength="100" />
+                            <span asp-validation-for="NamaPeriode" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Bulan Periode <span class="text-danger">*</span></label>
+                            <select asp-for="Bulan" class="form-select" required>
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    <option value="@i" selected="@(Model.Bulan == i)">
+                                        @System.Globalization.CultureInfo.GetCultureInfo("id-ID").DateTimeFormat.GetMonthName(i)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="Bulan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Tahun Periode <span class="text-danger">*</span></label>
+                            <input asp-for="Tahun" type="number" class="form-control" min="2020" max="2100" required />
+                            <span asp-validation-for="Tahun" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <hr class="my-2 text-muted" />
+                            <div class="small fw-bold text-emerald mb-2">Rentang Cutoff Data Presensi & Lembur</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Tanggal Mulai Cutoff <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalMulai" type="date" class="form-control" required />
+                            <span asp-validation-for="TanggalMulai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-slate-700">Tanggal Selesai Cutoff <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalSelesai" type="date" class="form-control" required />
+                            <span asp-validation-for="TanggalSelesai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Tanggal Pembayaran Gaji / Transfer Bank <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalPembayaran" type="date" class="form-control" required />
+                            <span asp-validation-for="TanggalPembayaran" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-slate-700">Catatan Periode (Opsional)</label>
+                            <textarea asp-for="Catatan" class="form-control" rows="2" placeholder="Catatan operasional periode payroll ini..."></textarea>
+                            <span asp-validation-for="Catatan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Batal</a>
+                            <button type="submit" class="btn btn-emerald d-inline-flex align-items-center gap-2">
+                                <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                                <span>Simpan & Buka Periode</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+@model List<SistemHRD.ViewModels.ItemPayrollKaryawanViewModel>
+
+@{
+    ViewData["Title"] = "Riwayat Slip Gaji Saya";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="h3 fw-bold text-slate-800 mb-1">Riwayat Slip Gaji Saya</h1>
+        <p class="text-muted small mb-0">Lihat dan cetak dokumen bukti slip gaji resmi bulanan Anda.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="card-title fw-bold text-slate-800 mb-0">Daftar Slip Gaji Tersedia</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-3 py-3">Nomor Slip Gaji</th>
+                        <th>Karyawan</th>
+                        <th>Departemen / Jabatan</th>
+                        <th class="text-end">Pendapatan Kotor</th>
+                        <th class="text-end text-danger">Total Potongan</th>
+                        <th class="text-end text-emerald">Take Home Pay</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-3">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3 font-monospace fw-bold text-emerald">
+                                    @item.NomorSlipGaji
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-slate-800">@item.NamaKaryawan</div>
+                                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.75rem;">@item.NomorIndukKaryawan</span>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-slate-700">@item.NamaDepartemen</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@item.NamaJabatan</div>
+                                </td>
+                                <td class="text-end font-monospace">
+                                    Rp @item.TotalPendapatanKotor.ToString("N0")
+                                </td>
+                                <td class="text-end font-monospace text-danger">
+                                    Rp @item.TotalPotongan.ToString("N0")
+                                </td>
+                                <td class="text-end font-monospace fw-bold text-emerald fs-6">
+                                    Rp @item.GajiBersih.ToString("N0")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Resmi Terbit</span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="Slip" asp-route-id="@item.PenggajianId" class="btn btn-sm btn-emerald d-inline-flex align-items-center gap-1">
+                                        <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
+                                        <span>Buka Slip</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i data-lucide="file-text" style="width: 48px; height: 48px;" class="mb-3 text-secondary opacity-50"></i>
+                                <p class="mb-0 fw-semibold">Belum ada slip gaji yang diterbitkan untuk akun Anda.</p>
+                                <small class="text-muted">Slip gaji akan muncul otomatis setelah payroll periode berjalan disetujui oleh manajemen.</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

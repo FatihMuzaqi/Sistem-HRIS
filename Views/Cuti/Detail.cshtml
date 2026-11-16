@@ -1,0 +1,360 @@
+@model SistemHRD.ViewModels.PengajuanCutiDetailViewModel
+@using SistemHRD.Common.Constants
+@using SistemHRD.Models.Enums
+
+@{
+    ViewData["Title"] = $"Detail Pengajuan Cuti - {Model.NomorPengajuan}";
+    var canManagerApprove = User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD) || User.IsInRole(NamaPeran.Manager);
+    var canHrdVerify = User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD);
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h3 fw-bold text-slate-800 mb-0">Pengajuan Cuti @Model.NomorPengajuan</h1>
+            @switch (Model.Status)
+            {
+                case StatusPengajuanCuti.MenungguPersetujuanManager:
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Menunggu Manager</span>
+                    break;
+                case StatusPengajuanCuti.DisetujuiManager:
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">Menunggu HRD</span>
+                    break;
+                case StatusPengajuanCuti.Disetujui:
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Disetujui (Selesai)</span>
+                    break;
+                case StatusPengajuanCuti.Ditolak:
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Ditolak</span>
+                    break;
+                case StatusPengajuanCuti.Dibatalkan:
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-1">Dibatalkan</span>
+                    break;
+            }
+        </div>
+        <p class="text-muted small mb-0">Diajukan pada @Model.TanggalDiajukan.ToString("dd MMMM yyyy HH:mm") WIB</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+            <span>Kembali ke Daftar</span>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Informasi Pemohon & Detail Cuti -->
+    <div class="col-lg-8">
+        <!-- Kartu Detail Permohonan -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="card-title fw-bold text-slate-800 mb-0">Rincian Permohonan Cuti</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Jenis Cuti</label>
+                        <div class="fw-bold text-slate-800 fs-6">
+                            @Model.NamaJenisCuti
+                            @if (Model.PotongCutiTahunan)
+                            {
+                                <span class="badge bg-light text-secondary border ms-1">Potong Saldo Tahunan</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Durasi Cuti</label>
+                        <div class="fw-bold text-emerald fs-6">
+                            @Model.JumlahHari Hari Kerja
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Tanggal Mulai</label>
+                        <div class="fw-semibold text-slate-800 font-monospace">@Model.TanggalMulai.ToString("dd MMMM yyyy")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small">Tanggal Selesai</label>
+                        <div class="fw-semibold text-slate-800 font-monospace">@Model.TanggalSelesai.ToString("dd MMMM yyyy")</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small">Alasan Permohonan</label>
+                        <div class="p-3 bg-light rounded text-slate-800">
+                            @Model.Alasan
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.AlamatSelamaCuti))
+                    {
+                        <div class="col-md-6">
+                            <label class="text-muted small">Alamat Selama Cuti</label>
+                            <div class="fw-medium text-slate-800">@Model.AlamatSelamaCuti</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.NomorTeleponDarurat))
+                    {
+                        <div class="col-md-6">
+                            <label class="text-muted small">Kontak Darurat</label>
+                            <div class="fw-medium text-slate-800">@Model.NomorTeleponDarurat</div>
+                        </div>
+                    }
+                    @if (Model.AdaDokumen)
+                    {
+                        <div class="col-12">
+                            <label class="text-muted small">Dokumen Lampiran Pendukung</label>
+                            <div class="d-flex align-items-center justify-content-between p-3 border rounded bg-white mt-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i data-lucide="file-text" style="width: 20px; height: 20px;" class="text-emerald"></i>
+                                    <span class="fw-semibold text-slate-800">@Model.NamaDokumenPendukung</span>
+                                </div>
+                                <a asp-action="UnduhDokumen" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-emerald d-inline-flex align-items-center gap-1">
+                                    <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                    <span>Unduh Berkas</span>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi Otorisasi -->
+        @if (canManagerApprove && Model.BisaDisetujuiManager)
+        {
+            <div class="card border-0 shadow-sm mb-4 border-start border-4 border-warning">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-slate-800 mb-2">Persetujuan Tingkat Manager</h5>
+                    <p class="text-muted small mb-3">Sebagai Manager atau SuperAdmin, Anda berwenang menyetujui permohonan ini untuk diteruskan ke verifikasi HRD.</p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-emerald d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalSetujuiManager">
+                            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                            <span>Setujui Permohonan (Manager)</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalTolakManager">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            <span>Tolak Permohonan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (canHrdVerify && (Model.Status == StatusPengajuanCuti.DisetujuiManager || Model.Status == StatusPengajuanCuti.MenungguPersetujuanManager))
+        {
+            <div class="card border-0 shadow-sm mb-4 border-start border-4 border-emerald">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-slate-800 mb-2">Verifikasi Akhir HRD</h5>
+                    <p class="text-muted small mb-3">Persetujuan akhir oleh HRD akan otomatis memotong saldo cuti tahunan karyawan dan mencatat jadwal cuti ke sistem presensi.</p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-emerald d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalVerifikasiHRD">
+                            <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
+                            <span>Verifikasi & Setujui Cuti (HRD)</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalTolakHRD">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            <span>Tolak Cuti</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Sidebar Profil Pemohon & Timeline Persetujuan -->
+    <div class="col-lg-4">
+        <!-- Profil Pemohon -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="rounded-circle bg-emerald text-white d-inline-flex justify-content-center align-items-center mb-3" style="width: 64px; height: 64px; font-size: 1.5rem; font-weight: bold;">
+                    @(Model.NamaKaryawan.Length > 0 ? Model.NamaKaryawan[0].ToString().ToUpper() : "K")
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-0">@Model.NamaKaryawan</h5>
+                <span class="badge bg-light text-muted border font-monospace my-1">@Model.NomorIndukKaryawan</span>
+                <div class="text-slate-600 small mt-1">@Model.NamaDepartemen &bull; @Model.NamaJabatan</div>
+
+                <hr class="my-3" />
+
+                <div class="text-start small">
+                    <div class="d-flex justify-content-between py-1">
+                        <span class="text-muted">Email:</span>
+                        <span class="fw-medium text-slate-800">@Model.Email</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.NomorTelepon))
+                    {
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted">No. Telepon:</span>
+                            <span class="fw-medium text-slate-800">@Model.NomorTelepon</span>
+                        </div>
+                    }
+                    @if (Model.SisaSaldoCuti.HasValue)
+                    {
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted">Sisa Saldo Cuti:</span>
+                            <span class="fw-bold text-emerald">@Model.SisaSaldoCuti hari</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Alur Persetujuan (Timeline) -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold text-slate-800 mb-0">Riwayat Persetujuan</h6>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-unstyled mb-0">
+                    <!-- Step 1: Diajukan -->
+                    <li class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                        <div class="text-success"><i data-lucide="check-circle" style="width: 20px; height: 20px;"></i></div>
+                        <div>
+                            <div class="fw-bold text-slate-800 small">Pengajuan Dibuat</div>
+                            <div class="text-muted small">Oleh Karyawan</div>
+                            <div class="font-monospace text-muted" style="font-size: 0.75rem;">@Model.TanggalDiajukan.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </li>
+
+                    @if (Model.DaftarPersetujuan.Any())
+                    {
+                        foreach (var ap in Model.DaftarPersetujuan)
+                        {
+                            var isApproved = ap.Keputusan == KeputusanPersetujuan.Disetujui;
+                            <li class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                                <div class="@(isApproved ? "text-success" : "text-danger")">
+                                    <i data-lucide="@(isApproved ? "check-circle" : "x-circle")" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-slate-800 small">
+                                        Tahap @ap.Tahap: @(isApproved ? "Disetujui" : "Ditolak")
+                                    </div>
+                                    <div class="text-muted small">Oleh @ap.NamaPenyetuju</div>
+                                    @if (!string.IsNullOrEmpty(ap.Catatan))
+                                    {
+                                        <div class="fst-italic text-slate-600 small mt-1">"@ap.Catatan"</div>
+                                    }
+                                    <div class="font-monospace text-muted" style="font-size: 0.75rem;">@ap.WaktuPersetujuan.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="text-muted small text-center py-2">
+                            Menunggu proses peninjauan persetujuan.
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Setujui Manager -->
+<div class="modal fade" id="modalSetujuiManager" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="SetujuiManager" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PengajuanCutiId" value="@Model.Id" />
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-slate-800">Setujui Permohonan Cuti (Manager)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Konfirmasi persetujuan untuk pengajuan cuti <strong>@Model.NamaKaryawan</strong> selama <strong>@Model.JumlahHari hari</strong>.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Catatan Manager (Opsional)</label>
+                        <textarea name="Catatan" class="form-control" rows="2" placeholder="Tugas pekerjaan telah didelegasikan dengan baik..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Setujui & Teruskan ke HRD</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tolak Manager -->
+<div class="modal fade" id="modalTolakManager" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="TolakManager" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PengajuanCutiId" value="@Model.Id" />
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-danger">Tolak Permohonan Cuti (Manager)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Alasan Penolakan <span class="text-danger">*</span></label>
+                        <textarea name="Catatan" class="form-control" rows="3" placeholder="Sebutkan alasan penolakan cuti..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tolak Pengajuan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Verifikasi HRD -->
+<div class="modal fade" id="modalVerifikasiHRD" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="VerifikasiHRD" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PengajuanCutiId" value="@Model.Id" />
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-emerald">Verifikasi & Setujui Cuti (HRD)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small mb-3">
+                        <i data-lucide="info" style="width: 16px; height: 16px;" class="me-1"></i>
+                        Persetujuan ini adalah tahap final. Sistem akan secara otomatis:
+                        <ul class="mb-0 ps-3 mt-1">
+                            <li>Memotong saldo cuti tahunan pemohon sebanyak <strong>@Model.JumlahHari hari</strong>.</li>
+                            <li>Mencatat entri presensi berstatus 'Cuti' pada rentang tanggal tersebut.</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Catatan Verifikasi HRD (Opsional)</label>
+                        <textarea name="Catatan" class="form-control" rows="2" placeholder="Dokumen lengkap dan telah terverifikasi..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald">Verifikasi & Setujui Final</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tolak HRD -->
+<div class="modal fade" id="modalTolakHRD" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="TolakHRD" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PengajuanCutiId" value="@Model.Id" />
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-danger">Tolak Permohonan Cuti (HRD)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Alasan Penolakan HRD <span class="text-danger">*</span></label>
+                        <textarea name="Catatan" class="form-control" rows="3" placeholder="Sebutkan alasan penolakan..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tolak Pengajuan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

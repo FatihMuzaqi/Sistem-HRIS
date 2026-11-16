@@ -1,0 +1,225 @@
+@model SistemHRD.ViewModels.RincianPenggajianViewModel
+@using SistemHRD.Models.Enums
+
+@{
+    ViewData["Title"] = $"Rincian Gaji - {Model.NamaKaryawan} ({Model.NomorSlipGaji})";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h3 fw-bold text-slate-800 mb-0">Rincian Penggajian: @Model.NamaKaryawan</h1>
+            @if (Model.ApakahTerkunci)
+            {
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Disetujui</span>
+            }
+            else
+            {
+                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Draf Hitung</span>
+            }
+        </div>
+        <p class="text-muted small mb-0">
+            Periode: <strong>@Model.NamaPeriode</strong> &bull; No. Slip: <strong class="font-monospace text-emerald">@Model.NomorSlipGaji</strong>
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="PeriodeDetail" asp-route-id="@Model.PeriodePenggajianId" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+            <span>Kembali ke Periode</span>
+        </a>
+        <a asp-action="Slip" asp-route-id="@Model.PenggajianId" class="btn btn-emerald d-inline-flex align-items-center gap-2">
+            <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
+            <span>Cetak Slip Gaji</span>
+        </a>
+    </div>
+</div>
+
+<!-- Informasi Karyawan & Ringkasan Presensi -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold text-slate-800 mb-0">Informasi Karyawan & Pembayaran</h6>
+            </div>
+            <div class="card-body p-3">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted small" style="width: 150px;">NIK</td>
+                        <td class="fw-semibold font-monospace">@Model.NomorIndukKaryawan</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Departemen / Jabatan</td>
+                        <td class="fw-semibold">@Model.NamaDepartemen &bull; @Model.NamaJabatan</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Status PTKP</td>
+                        <td><span class="badge bg-light text-slate-700 border font-monospace">@Model.StatusPTKP</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Metode PPh 21</td>
+                        <td><span class="badge bg-light text-emerald border">@Model.MetodePajak</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted small">Rekening Transfer</td>
+                        <td class="fw-semibold">@Model.NamaBank &mdash; @(Model.NomorRekeningBank ?? "-")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold text-slate-800 mb-0">Rekapitulasi Presensi & Lembur</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="row text-center g-2">
+                    <div class="col-6 col-sm-3">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted small d-block">Hari Kerja</span>
+                            <strong class="h5 mb-0 font-monospace">@Model.HariKerjaEfektif</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted small d-block">Jumlah Hadir</span>
+                            <strong class="h5 mb-0 font-monospace text-emerald">@Model.JumlahHadir</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted small d-block">Terlambat</span>
+                            <strong class="h5 mb-0 font-monospace text-warning">@Model.JumlahTerlambat x</strong>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">@Model.TotalMenitTerlambat mnt</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="p-2 border rounded bg-light">
+                            <span class="text-muted small d-block">Jam Lembur</span>
+                            <strong class="h5 mb-0 font-monospace text-info">@Model.JumlahJamLembur jam</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Snapshot Rincian Pendapatan & Potongan -->
+<div class="row g-4 mb-4">
+    <!-- Kolom Pendapatan -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-emerald text-white py-3">
+                <h6 class="fw-bold mb-0 d-flex justify-content-between align-items-center">
+                    <span>1. Rincian Pendapatan (Earnings)</span>
+                    <span class="badge bg-white text-emerald">@Model.DaftarPendapatan.Count Komponen</span>
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th class="ps-3 py-2">Komponen</th>
+                            <th class="text-end pe-3">Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        @foreach (var p in Model.DaftarPendapatan)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-slate-800">@p.NamaKomponen</div>
+                                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.7rem;">@p.KodeKomponen</span>
+                                    @if (!string.IsNullOrEmpty(p.Keterangan))
+                                    {
+                                        <small class="text-muted d-block">@p.Keterangan</small>
+                                    }
+                                </td>
+                                <td class="text-end pe-3 font-monospace fw-semibold text-slate-800">
+                                    Rp @p.Nominal.ToString("N0")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="bg-light fw-bold">
+                        <tr>
+                            <td class="ps-3 py-3 text-slate-800">TOTAL PENDAPATAN KOTOR</td>
+                            <td class="text-end pe-3 text-emerald font-monospace fs-6">Rp @Model.TotalPendapatanKotor.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kolom Potongan -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-danger text-white py-3">
+                <h6 class="fw-bold mb-0 d-flex justify-content-between align-items-center">
+                    <span>2. Rincian Potongan (Deductions)</span>
+                    <span class="badge bg-white text-danger">@Model.DaftarPotongan.Count Komponen</span>
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th class="ps-3 py-2">Komponen</th>
+                            <th class="text-end pe-3">Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        @if (Model.DaftarPotongan.Any())
+                        {
+                            foreach (var p in Model.DaftarPotongan)
+                            {
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="fw-bold text-slate-800">@p.NamaKomponen</div>
+                                        <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.7rem;">@p.KodeKomponen</span>
+                                        @if (!string.IsNullOrEmpty(p.Keterangan))
+                                        {
+                                            <small class="text-muted d-block">@p.Keterangan</small>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-3 font-monospace fw-semibold text-danger">
+                                        Rp @p.Nominal.ToString("N0")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2" class="text-center py-4 text-muted small">Tidak ada potongan.</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="bg-light fw-bold">
+                        <tr>
+                            <td class="ps-3 py-3 text-slate-800">TOTAL POTONGAN</td>
+                            <td class="text-end pe-3 text-danger font-monospace fs-6">Rp @Model.TotalPotongan.ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kartu Ringkasan Take Home Pay -->
+<div class="card border-0 shadow-sm bg-light border-start border-4 border-emerald">
+    <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <div>
+            <span class="text-muted small fw-bold text-uppercase">Gaji Bersih Diterima Karyawan (Take Home Pay)</span>
+            <div class="display-6 fw-bold text-emerald mb-0 font-monospace">Rp @Model.GajiBersih.ToString("N0")</div>
+        </div>
+        <div class="text-md-end">
+            <span class="badge bg-light text-muted border font-monospace p-2">
+                Biaya BPJS Perusahaan: Rp @Model.TotalBpjsDitanggungPerusahaan.ToString("N0")
+            </span>
+        </div>
+    </div>
+</div>

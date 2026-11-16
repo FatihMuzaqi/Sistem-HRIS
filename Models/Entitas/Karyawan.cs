@@ -54,6 +54,26 @@ public class Karyawan : EntitasTenantDasar
     public string? FotoProfil { get; set; }
 
     /// <summary>
+    /// Status Penghasilan Tidak Kena Pajak (PTKP) untuk perhitungan PPh 21.
+    /// </summary>
+    public StatusPTKP StatusPTKP { get; set; } = StatusPTKP.TK0;
+
+    [MaxLength(50)]
+    public string? NamaBank { get; set; }
+
+    [MaxLength(50)]
+    public string? NomorRekeningBank { get; set; }
+
+    [MaxLength(50)]
+    public string? NomorNPWP { get; set; }
+
+    [MaxLength(50)]
+    public string? NomorBpjsKesehatan { get; set; }
+
+    [MaxLength(50)]
+    public string? NomorBpjsKetenagakerjaan { get; set; }
+
+    /// <summary>
     /// ID Akun Pengguna (Identity) jika karyawan memiliki akses ke sistem ESS.
     /// </summary>
     public Guid? PenggunaId { get; set; }
@@ -66,4 +86,11 @@ public class Karyawan : EntitasTenantDasar
     public virtual ICollection<DokumenKaryawan> DaftarDokumen { get; set; } = new List<DokumenKaryawan>();
     public virtual ICollection<KontakDaruratKaryawan> DaftarKontakDarurat { get; set; } = new List<KontakDaruratKaryawan>();
     public virtual ICollection<RiwayatPekerjaan> DaftarRiwayatPekerjaan { get; set; } = new List<RiwayatPekerjaan>();
+    public virtual ICollection<Kehadiran> DaftarKehadiran { get; set; } = new List<Kehadiran>();
+    public virtual ICollection<JadwalKerja> DaftarJadwalKerja { get; set; } = new List<JadwalKerja>();
+    public virtual ICollection<PengajuanLembur> DaftarPengajuanLembur { get; set; } = new List<PengajuanLembur>();
+    public virtual ICollection<SaldoCuti> DaftarSaldoCuti { get; set; } = new List<SaldoCuti>();
+    public virtual ICollection<PengajuanCuti> DaftarPengajuanCuti { get; set; } = new List<PengajuanCuti>();
+    public virtual ICollection<GajiKaryawan> DaftarGajiKaryawan { get; set; } = new List<GajiKaryawan>();
+    public virtual ICollection<Penggajian> DaftarPenggajian { get; set; } = new List<Penggajian>();
 }

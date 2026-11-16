@@ -129,8 +129,134 @@ Dokumen ini mencatat log kronologis tahapan implementasi, perubahan arsitektur, 
 
 ---
 
-## [Fase 3] — Modul Presensi & Kehadiran (Attendance)
+## [Fase 3] — Modul Kehadiran dan Pengajuan Cuti (Attendance & Leave Management)
+**Status**: ✅ SELESAI (100% Lulus Pengujian Integrasi Otomatis)
+
+### Ringkasan Pekerjaan:
+1. **Model & Enums**:
+   * Enums (`Models/Enums/EnumsKehadiranDanCuti.cs`): `StatusKehadiran`, `StatusPengajuanLembur`, `StatusPengajuanCuti`, `TahapPersetujuanCuti`, `KeputusanPersetujuan`.
+   * Entitas Kehadiran: `ShiftKerja`, `JadwalKerja`, `Kehadiran`, `PengajuanLembur`.
+   * Entitas Cuti: `JenisCuti`, `SaldoCuti`, `PengajuanCuti`, `PersetujuanCuti`.
+   * Relasi & Navigation properties pada `Karyawan` (`DaftarKehadiran`, `DaftarJadwalKerja`, `DaftarPengajuanLembur`, `DaftarSaldoCuti`, `DaftarPengajuanCuti`).
+
+2. **Entity Framework Core & Database**:
+   * Migrasi EF Core: `TambahModulKehadiranDanCuti` diterapkan ke MySQL / MariaDB (`sistemhrd_db`).
+   * Konfigurasi Fluent API: Relasi foreign key, composite indexes unik (`PerusahaanId, KodeShift`, `PerusahaanId, KaryawanId, Tanggal`, `PerusahaanId, KodeJenisCuti`, `PerusahaanId, KaryawanId, JenisCutiId, PeriodeTahun`).
+   * Global Query Filter untuk isolasi data tenant pada seluruh 8 entitas baru.
+   * Data Seeding: Inisialisasi shift kerja baku, master jenis cuti reguler, dan inisialisasi kuota saldo cuti 2026.
+
+3. **Service Layer**:
+   * `ILayananKehadiran` & `LayananKehadiran`: Kalkulasi presensi masuk/pulang, toleransi keterlambatan menit, jam kerja riil, CRUD shift, pengajuan lembur, dan verifikasi lembur oleh Manager.
+   * `ILayananCuti` & `LayananCuti`: Validasi bentrok jadwal, pengecekan ketersediaan saldo cuti, unggah dokumen pendukung berukuran s/d 5MB dengan ekstensi terverifikasi, alur persetujuan bertingkat (Manager -> HRD), transaksi database atomik (`BeginTransactionAsync`), audit log, dan pencegahan pemotongan ganda (idempotency).
+
+4. **Controllers & Razor Views**:
+   * `KehadiranController`: Halaman utama presensi, Employee Self-Service (ESS) clock-in/clock-out interaktif, rekapitulasi kehadiran bulanan, master shift kerja, dan manajemen lembur.
+   * `CutiController`: Pengajuan cuti karyawan (dengan upload berkas), detail permohonan dengan riwayat alur persetujuan, otorisasi persetujuan Manager & verifikasi HRD, unduh dokumen berotorisasi, master jenis cuti, dan manajemen saldo cuti tahunan.
+   * UI Emerald Green (`#059669`) responsif, kartu statistik antrean, badge status, modal interaktif, dan notifikasi flash alert.
+
+### Hasil Pengujian Integrasi Otomatis (19 Skenario Lulus 100%):
+1. **Uji 1 (Login HRD)**: Autentikasi HRD PT Solusi HR Nusantara (`hrd@solusihr.id`) berhasil. *(LULUS)*
+2. **Uji 2 (Master Shift Kerja)**: Tampilan daftar master shift kerja aktif (REG 08:00 - 17:00). *(LULUS)*
+3. **Uji 3 (Tambah Shift Baru)**: Registrasi shift malam operasional (`SFT-MALAM`) berhasil disimpan. *(LULUS)*
+4. **Uji 4 (Master Jenis Cuti)**: Jenis cuti reguler (CT-THN, CT-SKT, CT-MLH, CT-NIKAH, CT-DUKA) terkonfigurasi. *(LULUS)*
+5. **Uji 5 (Saldo Cuti 2026)**: Saldo hak cuti tahunan karyawan Rian Pratama terverifikasi (12 Hari). *(LULUS)*
+6. **Uji 6 (Login Karyawan)**: Autentikasi akun ESS karyawan (`karyawan@solusihr.id`) berhasil. *(LULUS)*
+7. **Uji 7 (Layar Presensi ESS)**: Profil karyawan, jam shift aktif, dan widget jam real-time ter-render. *(LULUS)*
+8. **Uji 8 (Check-In Presensi)**: Check-In tercatat beserta lokasi, waktu, dan kalkulasi status kehadiran. *(LULUS)*
+9. **Uji 9 (Pencegahan Check-In Ganda)**: Sistem menolak percobaan check-in ganda di hari yang sama. *(LULUS)*
+10. **Uji 10 (Check-Out Presensi)**: Check-Out tersimpan beserta penghitungan durasi jam kerja riil. *(LULUS)*
+11. **Uji 11 (Pengajuan Lembur)**: Pengajuan lembur 3.0 jam berhasil didaftarkan karyawan. *(LULUS)*
+12. **Uji 12 (Persetujuan Lembur Manager)**: Manager login dan menyetujui lembur secara instan. *(LULUS)*
+13. **Uji 13 (Pengajuan Cuti Karyawan)**: Permohonan cuti 2 hari beserta lampiran dokumen berhasil dibuat. *(LULUS)*
+14. **Uji 14 (Validasi Bentrok Jadwal Cuti)**: Sistem menolak pengajuan baru yang bertabrakan dengan rentang tanggal cuti aktif. *(LULUS)*
+15. **Uji 15 (Persetujuan Manager Tahap 1)**: Manager meninjau dan menyetujui cuti; status beralih ke `Menunggu HRD`. *(LULUS)*
+16. **Uji 16 (Verifikasi HRD & Potong Saldo Atomik)**: HRD memverifikasi permohonan cuti; transaksi database memotong saldo cuti dari 12 menjadi 10 hari dan status beralih ke `Disetujui (Selesai)`. *(LULUS)*
+17. **Uji 17 (Uji Idempotensi Approval HRD)**: Persetujuan ulang tidak memotong saldo cuti dua kali (saldo tetap 10 hari). *(LULUS)*
+18. **Uji 18 (Unduh Berkas Lampiran)**: Pengunduhan berkas dokumen cuti berhasil dengan integritas byte valid. *(LULUS)*
+19. **Uji 19 (Isolasi Multi-Tenant)**:
+    - HRD Perusahaan 2 (`hrd2@majubersama.id`) tidak melihat pengajuan cuti Perusahaan 1 di daftar.
+    - Percobaan akses langsung via URL ke ID cuti Perusahaan 1 ditolak oleh Global Query Filter.
+    - Percobaan unduh berkas lampiran cuti Perusahaan 1 oleh HRD 2 menghasilkan HTTP 404 (Not Found / Protected). *(LULUS)*
+
+---
+
+## [Fase 4] — Modul Penggajian (Payroll) Lengkap (SELESAI)
+**Tanggal**: 16 November 2026
+
+### Rincian Implementasi:
+1. **Model & Entitas Database**:
+   * Menambahkan 7 entitas penggajian komprehensif (`ITenantEntity`, `IAuditEntity`, `ISoftDelete`):
+     - `KomponenGaji`: Master komponen gaji (Pendapatan/Potongan, Tetap/Tidak Tetap, Kategori, Kena Pajak, Masuk BPJS, Otomatis Sistem).
+     - `GajiKaryawan`: Struktur gaji dasar per karyawan (Gaji Pokok, Tunjangan Jabatan, Transport, Makan, Bonus).
+     - `KebijakanPenggajianPerusahaan`: Konfigurasi per tenant (rumus lembur flat vs Kemnaker 1/173, toleransi & denda keterlambatan per menit, tarif persentase & plafon upah BPJS Kesehatan/JHT/JP/JKK/JKM, dan TER PPh 21 PP 58/2023).
+     - `PeriodePenggajian`: Siklus cutoff bulanan (tanggal cutoff awal/akhir, tanggal pembayaran gaji, status Draf/Diproses/MenungguPersetujuan/Disetujui/Selesai).
+     - `Penggajian`: Rekap payroll karyawan per periode dengan field nominal `decimal(18,2)`, rekap kehadiran/lembur/terlambat, status, dan flag penguncian (`ApakahTerkunci`).
+     - `DetailPenggajian`: Snapshot historis seluruh komponen pendapatan & potongan yang dibekukan saat payroll diproses.
+     - `SlipGaji`: Metadata penerbitan slip resmi, kode verifikasi unik (`VERIF-XXXXXXXX`), timestamp penerbitan, tracking waktu lihat ESS karyawan, dan catatan kaki.
+   * Enums Pendukung: `JenisKomponenGaji`, `SifatKomponenGaji`, `KategoriKomponenGaji`, `StatusPeriodePenggajian`, `StatusPenggajian`, `MetodePajakPPh21`, `StatusPTKP`.
+   * Migrasi EF Core: `TambahModulPenggajianLengkap` (diterapkan bersih ke MariaDB `sistemhrd_db`).
+
+2. **Mesin Kalkulasi Gaji Murni (`ILayananKalkulatorGaji`)**:
+   * Terpisah dari layer controller dan tampilan (Clean Separation of Concerns).
+   * Menghitung upah lembur Kemnaker: `(1.5 x JamPertama + 2.0 x JamBerikutnya) x (1/173 x UpahDasar)`.
+   * Menghitung denda keterlambatan dengan toleransi gratis.
+   * Menghitung BPJS Kesehatan: 1% pekerja, 4% pemberi kerja, dengan batas plafon upah Rp 12.000.000.
+   * Menghitung BPJS Ketenagakerjaan: JHT (2% pekerja, 3.7% perusahaan), JP (1% pekerja, 2% perusahaan, plafon Rp 10.042.300), JKK (0.24%), JKM (0.30%).
+   * Menghitung Pajak Penghasilan PPh 21 menggunakan regulasi resmi **PP No. 58 Tahun 2023** (Tabel Tarif Efektif Rata-Rata Bulanan TER A, TER B, dan TER C berdasarkan status PTKP TK/0 s/d K/3).
+
+3. **Service Layer & Arsitektur Transaksi (`ILayananPenggajian`)**:
+   * Pengelolaan master komponen gaji & audit log otomatis.
+   * Konfigurasi aturan tarif dan siklus payroll per tenant.
+   * Pengaturan struktur gaji per karyawan (NIK, PTKP, NPWP, Bank, Rekening, BPJS).
+   * Pembuatan siklus periode penggajian bulanan.
+   * Kalkulasi batch otomatis terintegrasi langsung dengan database presensi, lembur disetujui, dan denda terlambat.
+   * Transaksi database atomik (`BeginTransactionAsync`) menjamin konsistensi data saat generate batch dan approval.
+   * Pencegahan duplikasi payroll (kombinasi `PeriodePenggajianId` dan `KaryawanId` unik, re-kalkulasi memperbarui data eksisting).
+   * Workflow persetujuan & penguncian mutlak: payroll yang telah disetujui dibekukan (`ApakahTerkunci = true`), penerbitan slip resmi, dan penolakan kalkulasi ulang.
+   * Ekspor laporan rekapitulasi penggajian dalam format CSV standar transfer perbankan.
+
+4. **Controllers & Razor Views**:
+   * `PenggajianController`: Dashboard periode payroll, form tambah periode, detail review rincian per karyawan, eksekusi batch, approval & lock, cetak slip resmi, riwayat ESS karyawan, ekspor CSV, master komponen, form atur gaji karyawan, dan konfigurasi kebijakan tenant.
+   * Desain slip gaji profesional responsif, dilengkapi kop perusahaan, logo, watermark confidential, tabel rincian pendapatan & potongan, fungsi konversi bilangan rupiah ke teks (`HelperTerbilang`), kode verifikasi, serta optimasi cetak browser `@media print` untuk simpan ke PDF.
+
+5. **Unit Tests (`SistemHRD.Tests`)**:
+   * 9 Unit test kalkulasi murni menggunakan xUnit (`UjiKalkulatorGaji.cs`):
+     - Kemnaker overtime formula (1/173).
+     - Flat overtime rate.
+     - Denda keterlambatan dengan toleransi gratis.
+     - BPJS Kesehatan normal & penegakan plafon upah (12 juta).
+     - BPJS Ketenagakerjaan JHT & JP (plafon 10.042.300).
+     - PPh 21 TER A (penghasilan kena tarif 0% s/d tarif bertingkat).
+     - PPh 21 TER B.
+     - PPh 21 TER C.
+     - Rekap total take home pay.
+   * Hasil: **Passed: 9, Failed: 0, Skipped: 0 (100% Lulus)**.
+
+6. **Pengujian Integrasi End-to-End (`test_phase4.ps1`)**:
+   * 17 Skenario Pengujian Otomatis:
+     1. Login Finance & HRD Tenant 1. *(LULUS)*
+     2. Akses Master Komponen Gaji. *(LULUS)*
+     3. Tambah Komponen Gaji Baru (`BONUS-PROYEK`). *(LULUS)*
+     4. Akses & Simpan Kebijakan Penggajian Tenant. *(LULUS)*
+     5. Konfigurasi Gaji Karyawan Rian Pratama. *(LULUS)*
+     6. Buat Periode Penggajian November 2026. *(LULUS)*
+     7. Eksekusi Hitung Gaji Batch Otomatis. *(LULUS)*
+     8. Verifikasi Snapshot Komponen & Rincian Penggajian. *(LULUS)*
+     9. Verifikasi Pencegahan Duplikasi Payroll. *(LULUS)*
+     10. Persetujuan & Penerbitan Payroll Periode. *(LULUS)*
+     11. Verifikasi Payroll Terkunci (Perhitungan ulang ditolak). *(LULUS)*
+     12. Tampilkan Slip Gaji Resmi & Kode Verifikasi. *(LULUS)*
+     13. Ekspor Laporan Rekap Payroll CSV. *(LULUS)*
+     14. Login Karyawan ESS & Akses Riwayat Slip Gaji. *(LULUS)*
+     15. Karyawan Membuka Slip Gaji Milik Sendiri. *(LULUS)*
+     16. Proteksi ESS: Karyawan Dilarang Mengintip Slip Rekan Lain. *(LULUS)*
+     17. Uji Isolasi Multi-Tenant: Tenant 2 Dilarang Akses Periode & Ekspor Payroll Tenant 1. *(LULUS)*
+
+---
+
+## [Fase 5] — Modul Rekrutmen (Recruitment)
 **Status**: ⏳ Siap Dikerjakan
-* Perancangan model `JadwalKerja`, `ShiftKerja`, `Kehadiran`, `LokasiPresensi`.
-* Fitur Presensi Masuk (Clock In) dan Presensi Pulang (Clock Out) dengan geolokasi / validasi IP.
-* Rekapitulasi absensi harian dan bulanan per karyawan dan departemen.
+* Lowongan Pekerjaan (Job Postings)
+* Pelamar & Pengunggahan CV / Dokumen
+* Tahapan Seleksi & Wawancara
+* Onboarding & Konversi Pelamar ke Karyawan

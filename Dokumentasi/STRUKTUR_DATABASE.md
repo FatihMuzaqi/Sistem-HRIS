@@ -161,13 +161,281 @@ Setiap entitas bisnis mewarisi kolom-kolom standar berikut:
 
 ---
 
-### 3.3 Tabel Modul Operasional SDM (Fase Lanjutan)
-1. **`Kehadiran`**:
-   * `Id`, `PerusahaanId` (FK), `KaryawanId` (FK), `Tanggal`, `JamMasuk`, `JamKeluar`, `StatusKehadiran`, `MenitKeterlambatan`.
-2. **`PengajuanCuti`**:
-   * `Id`, `PerusahaanId` (FK), `KaryawanId` (FK), `JenisCutiId` (FK), `TanggalMulai`, `TanggalSelesai`, `JumlahHari`, `StatusPersetujuan`.
-3. **`Penggajian`**:
-   * `Id`, `PerusahaanId` (FK), `KaryawanId` (FK), `PeriodeBulan`, `PeriodeTahun`, `GajiPokok`, `TotalTunjangan`, `TotalPotongan`, `GajiBersih`.
+### 3.3 Tabel Modul Kehadiran dan Pengajuan Cuti (Fase 3)
+1. **`ShiftKerja`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `NamaShift` (VARCHAR(100), NOT NULL)
+   * `KodeShift` (VARCHAR(50), NOT NULL)
+   * `JamMasuk` (TIME, NOT NULL)
+   * `JamPulang` (TIME, NOT NULL)
+   * `ToleransiKeterlambatanMenit` (INT, Default 0)
+   * `Keterangan` (VARCHAR(255), NULL)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KodeShift)`
+
+2. **`JadwalKerja`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `ShiftKerjaId` (GUID, FK `ShiftKerja`, `OnDelete: Restrict`)
+   * `Tanggal` (DATE, NOT NULL)
+   * `Catatan` (VARCHAR(255), NULL)
+   * Kolom Audit & Soft Delete
+   * Index: `(PerusahaanId, KaryawanId, Tanggal)`
+
+3. **`Kehadiran`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `ShiftKerjaId` (GUID, FK `ShiftKerja`, `OnDelete: SetNull`)
+   * `Tanggal` (DATE, NOT NULL)
+   * `WaktuMasuk` (DATETIMEOFFSET, NULL)
+   * `WaktuPulang` (DATETIMEOFFSET, NULL)
+   * `Status` (INT: 1=Hadir, 2=Terlambat, 3=PulangCepat, 4=Izin, 5=Sakit, 6=Cuti, 7=Alpa)
+   * `MenitKeterlambatan` (INT, Default 0)
+   * `MenitPulangCepat` (INT, Default 0)
+   * `TotalJamKerja` (DECIMAL(4,2), Default 0)
+   * `LokasiMasuk` (VARCHAR(255), NULL)
+   * `LokasiPulang` (VARCHAR(255), NULL)
+   * `CatatanMasuk` (VARCHAR(255), NULL)
+   * `CatatanPulang` (VARCHAR(255), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KaryawanId, Tanggal)`
+
+4. **`PengajuanLembur`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `TanggalLembur` (DATE, NOT NULL)
+   * `JamMulai` (TIME, NOT NULL)
+   * `JamSelesai` (TIME, NOT NULL)
+   * `TotalJam` (DECIMAL(4,2), NOT NULL)
+   * `AlasanLembur` (VARCHAR(500), NOT NULL)
+   * `Status` (INT: 1=MenungguPersetujuan, 2=Disetujui, 3=Ditolak, 4=Dibatalkan)
+   * `DisetujuiOlehId` (GUID, FK `Pengguna`, `OnDelete: SetNull`)
+   * `WaktuPersetujuan` (DATETIMEOFFSET, NULL)
+   * `CatatanPersetujuan` (VARCHAR(255), NULL)
+   * Kolom Audit & Soft Delete
+   * Index: `(PerusahaanId, KaryawanId, TanggalLembur)`, `(PerusahaanId, Status)`
+
+5. **`JenisCuti`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KodeJenisCuti` (VARCHAR(50), NOT NULL)
+   * `NamaJenisCuti` (VARCHAR(100), NOT NULL)
+   * `JatahHariPerTahun` (INT, Default 0)
+   * `PotongCutiTahunan` (BOOLEAN, Default TRUE)
+   * `WajibLampiran` (BOOLEAN, Default FALSE)
+   * `Keterangan` (VARCHAR(255), NULL)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KodeJenisCuti)`
+
+6. **`SaldoCuti`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `JenisCutiId` (GUID, FK `JenisCuti`, `OnDelete: Cascade`)
+   * `PeriodeTahun` (INT, NOT NULL)
+   * `JumlahHakCuti` (INT, NOT NULL)
+   * `CutiTerpakai` (INT, Default 0)
+   * `SisaCuti` (INT, NOT NULL)
+   * `Catatan` (VARCHAR(255), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KaryawanId, JenisCutiId, PeriodeTahun)`
+
+7. **`PengajuanCuti`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `JenisCutiId` (GUID, FK `JenisCuti`, `OnDelete: Restrict`)
+   * `NomorPengajuan` (VARCHAR(50), NOT NULL)
+   * `TanggalMulai` (DATE, NOT NULL)
+   * `TanggalSelesai` (DATE, NOT NULL)
+   * `JumlahHari` (INT, NOT NULL)
+   * `Alasan` (VARCHAR(500), NOT NULL)
+   * `AlamatSelamaCuti` (VARCHAR(255), NULL)
+   * `NomorTeleponDarurat` (VARCHAR(50), NULL)
+   * `NamaDokumenPendukung` (VARCHAR(255), NULL)
+   * `JalurDokumenPendukung` (VARCHAR(500), NULL)
+   * `Status` (INT: 1=MenungguPersetujuanManager, 2=DisetujuiManager, 3=Disetujui, 4=Ditolak, 5=Dibatalkan)
+   * Kolom Audit & Soft Delete
+   * Index: `(PerusahaanId, KaryawanId)`, `(PerusahaanId, Status)`
+
+8. **`PersetujuanCuti`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PengajuanCutiId` (GUID, FK `PengajuanCuti`, `OnDelete: Cascade`)
+   * `Tahap` (INT: 1=Manager, 2=HRD)
+   * `PenyetujuId` (GUID, FK `Pengguna`, `OnDelete: Restrict`)
+   * `Keputusan` (INT: 1=Disetujui, 2=Ditolak)
+   * `Catatan` (VARCHAR(500), NULL)
+   * `WaktuPersetujuan` (DATETIMEOFFSET, NOT NULL)
+   * Kolom Audit & Soft Delete
+   * Index: `(PerusahaanId, PengajuanCutiId)`
+
+---
+
+### 3.4 Tabel Modul Penggajian (Fase 4 - Terimplementasi)
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                              Perusahaan                                │
+└───────┬──────────────────────────┬───────────────────────────┬─────────┘
+        │ 1:N                      │ 1:N                       │ 1:1
+        ▼                          ▼                           ▼
+┌───────────────┐          ┌───────────────┐         ┌───────────────────────┐
+│ KomponenGaji  │          │PeriodePenggaji│         │KebijakanPenggajianPer │
+└───────┬───────┘          └───────┬───────┘         └───────────────────────┘
+        │ 1:N                      │ 1:N
+        ▼                          ▼
+┌───────────────┐          ┌───────────────┐
+│ GajiKaryawan  │          │  Penggajian   │◄─── (Karyawan)
+└───────────────┘          └───────┬───────┘
+                                   │ 1:N
+                   ┌───────────────┴───────────────┐
+                   ▼                               ▼
+         ┌───────────────────┐           ┌───────────────────┐
+         │ DetailPenggajian  │           │     SlipGaji      │
+         └───────────────────┘           └───────────────────┘
+```
+
+1. **`KomponenGaji`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KodeKomponen` (VARCHAR(50), Unique per `PerusahaanId`)
+   * `NamaKomponen` (VARCHAR(100), NOT NULL)
+   * `Jenis` (INT: 1=Pendapatan, 2=Potongan)
+   * `Sifat` (INT: 1=Tetap, 2=TidakTetap)
+   * `Kategori` (INT: 1=GajiPokok, 2=TunjanganTetap, 3=TunjanganTidakTetap, 4=UangLembur, 5=BpjsKesehatan, 6=BpjsKetenagakerjaanJHT, 7=BpjsKetenagakerjaanJP, 8=BpjsKetenagakerjaanJKK, 9=BpjsKetenagakerjaanJKM, 10=PajakPPh21, 11=PotonganKeterlambatan, 12=KasbonPinjaman, 13=PotonganLainnya)
+   * `NilaiBawaan` (DECIMAL(18,2), Default 0)
+   * `KenaPajak` (BOOLEAN, Default TRUE)
+   * `MasukKalkulasiBpjs` (BOOLEAN, Default FALSE)
+   * `DihitungOtomatisOlehSistem` (BOOLEAN, Default FALSE)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KodeKomponen)`
+
+2. **`GajiKaryawan`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Cascade`)
+   * `KomponenGajiId` (GUID, FK `KomponenGaji`, `OnDelete: Restrict`)
+   * `Nominal` (DECIMAL(18,2), NOT NULL)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * `Keterangan` (VARCHAR(255), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KaryawanId, KomponenGajiId)`
+
+3. **`KebijakanPenggajianPerusahaan`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`, Unique 1:1)
+   * `HitungLemburOtomatis` (BOOLEAN, Default TRUE)
+   * `TarifLemburPerJamFlat` (DECIMAL(18,2), Default 0; 0=Rumus Kemnaker 1/173)
+   * `TerapkanPotonganKeterlambatan` (BOOLEAN, Default TRUE)
+   * `ToleransiKeterlambatanGratisMenit` (INT, Default 15)
+   * `DendaKeterlambatanPerMenit` (DECIMAL(18,2), Default 1000)
+   * `TerapkanBpjsKesehatan` (BOOLEAN, Default TRUE)
+   * `PersenBpjsKesehatanPerusahaan` (DECIMAL(5,2), Default 4.00)
+   * `PersenBpjsKesehatanPekerja` (DECIMAL(5,2), Default 1.00)
+   * `BatasMaksimalUpahBpjsKesehatan` (DECIMAL(18,2), Default 12000000)
+   * `TerapkanBpjsKetenagakerjaan` (BOOLEAN, Default TRUE)
+   * `PersenBpjsJhtPerusahaan` (DECIMAL(5,2), Default 3.70)
+   * `PersenBpjsJhtPekerja` (DECIMAL(5,2), Default 2.00)
+   * `PersenBpjsJpPerusahaan` (DECIMAL(5,2), Default 2.00)
+   * `PersenBpjsJpPekerja` (DECIMAL(5,2), Default 1.00)
+   * `BatasMaksimalUpahBpjsJp` (DECIMAL(18,2), Default 10042300)
+   * `PersenBpjsJkkPerusahaan` (DECIMAL(5,2), Default 0.24)
+   * `PersenBpjsJkmPerusahaan` (DECIMAL(5,2), Default 0.30)
+   * `TerapkanPph21` (BOOLEAN, Default TRUE)
+   * `MetodePph21` (INT: 1=TER_PP58, 2=ProgresifPasal17, 3=GrossUp, 4=Nett)
+   * `TanggalCutoffAwal` (INT, Default 26)
+   * `TanggalCutoffAkhir` (INT, Default 25)
+   * `TanggalPembayaranGaji` (INT, Default 28)
+   * `CatatanSlipGajiDefault` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+
+4. **`PeriodePenggajian`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `NamaPeriode` (VARCHAR(100), NOT NULL)
+   * `Bulan` (INT, 1-12)
+   * `Tahun` (INT, misal 2026)
+   * `TanggalMulai` (DATE, NOT NULL)
+   * `TanggalSelesai` (DATE, NOT NULL)
+   * `TanggalPembayaran` (DATE, NOT NULL)
+   * `Status` (INT: 1=Draf, 2=Diproses, 3=MenungguPersetujuan, 4=Disetujui, 5=Selesai, 6=Dibatalkan)
+   * `TotalKaryawan` (INT, Default 0)
+   * `TotalPengeluaranGaji` (DECIMAL(18,2), Default 0)
+   * `Catatan` (VARCHAR(500), NULL)
+   * `DisetujuiOlehId` (GUID, FK `Pengguna`, `OnDelete: SetNull`)
+   * `WaktuDisetujui` (DATETIMEOFFSET, NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, Tahun, Bulan)`
+
+5. **`Penggajian`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PeriodePenggajianId` (GUID, FK `PeriodePenggajian`, `OnDelete: Cascade`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Restrict`)
+   * `NomorSlipGaji` (VARCHAR(50), NOT NULL)
+   * `StatusPTKP` (INT: 1=TK0 s/d 8=K3)
+   * `MetodePajak` (INT: 1=TER_PP58, dll)
+   * `HariKerjaEfektif` (INT)
+   * `JumlahHadir` (INT)
+   * `JumlahTerlambat` (INT)
+   * `TotalMenitTerlambat` (INT)
+   * `JumlahJamLembur` (DECIMAL(5,2))
+   * `GajiPokok` (DECIMAL(18,2), NOT NULL)
+   * `TotalTunjanganTetap` (DECIMAL(18,2), NOT NULL)
+   * `TotalTunjanganTidakTetap` (DECIMAL(18,2), NOT NULL)
+   * `TotalUangLembur` (DECIMAL(18,2), NOT NULL)
+   * `TotalPendapatanKotor` (DECIMAL(18,2), NOT NULL)
+   * `TotalPotonganBpjs` (DECIMAL(18,2), NOT NULL)
+   * `TotalPotonganPph21` (DECIMAL(18,2), NOT NULL)
+   * `TotalPotonganKeterlambatan` (DECIMAL(18,2), NOT NULL)
+   * `TotalPotonganLainnya` (DECIMAL(18,2), NOT NULL)
+   * `TotalPotongan` (DECIMAL(18,2), NOT NULL)
+   * `GajiBersih` (DECIMAL(18,2), NOT NULL)
+   * `TotalBpjsDitanggungPerusahaan` (DECIMAL(18,2), NOT NULL)
+   * `Status` (INT: 1=Draf, 2=Dihitung, 3=Disetujui, 4=Dibayarkan, 5=Dibatalkan)
+   * `ApakahTerkunci` (BOOLEAN, Default FALSE)
+   * `Catatan` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PeriodePenggajianId, KaryawanId)`
+   * Index: `(PerusahaanId, PeriodePenggajianId)`, `(PerusahaanId, KaryawanId)`
+
+6. **`DetailPenggajian` (Snapshot Historis)**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PenggajianId` (GUID, FK `Penggajian`, `OnDelete: Cascade`)
+   * `KomponenGajiId` (GUID, FK `KomponenGaji`, `OnDelete: Restrict`)
+   * `KodeKomponen` (VARCHAR(50), NOT NULL)
+   * `NamaKomponen` (VARCHAR(100), NOT NULL)
+   * `Jenis` (INT: Pendapatan / Potongan)
+   * `Sifat` (INT: Tetap / TidakTetap)
+   * `Kategori` (INT: Enum KategoriKomponenGaji)
+   * `Nominal` (DECIMAL(18,2), NOT NULL)
+   * `NominalDitanggungPerusahaan` (DECIMAL(18,2), Default 0)
+   * `Keterangan` (VARCHAR(255), NULL)
+   * `Urutan` (INT, Default 0)
+   * Kolom Audit & Soft Delete
+   * Index: `(PenggajianId)`
+
+7. **`SlipGaji`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PenggajianId` (GUID, FK `Penggajian`, Unique 1:1, `OnDelete: Cascade`)
+   * `NomorSlip` (VARCHAR(50), NOT NULL)
+   * `KodeVerifikasi` (VARCHAR(50), NOT NULL, Unique)
+   * `WaktuDiterbitkan` (DATETIMEOFFSET, NOT NULL)
+   * `SudahDilihatKaryawan` (BOOLEAN, Default FALSE)
+   * `WaktuDilihatKaryawan` (DATETIMEOFFSET, NULL)
+   * `CatatanKaki` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(KodeVerifikasi)`, `(PenggajianId)`
 
 ---
 
@@ -176,5 +444,9 @@ Setiap entitas bisnis mewarisi kolom-kolom standar berikut:
 * **Cascade Delete Rules**: Restrict / No Action pada entitas data master utama guna mencegah penghapusan data transaksi historis saat master dihapus.
 * **Unique Constraints**:
   * `Perusahaan.KodePerusahaan`
-  * `Karyawan.(PerusahaanId, NIK)`
+  * `Karyawan.(PerusahaanId, NomorIndukKaryawan)`
   * `Departemen.(PerusahaanId, KodeDepartemen)`
+  * `ShiftKerja.(PerusahaanId, KodeShift)`
+  * `Kehadiran.(PerusahaanId, KaryawanId, Tanggal)`
+  * `JenisCuti.(PerusahaanId, KodeJenisCuti)`
+  * `SaldoCuti.(PerusahaanId, KaryawanId, JenisCutiId, PeriodeTahun)`
