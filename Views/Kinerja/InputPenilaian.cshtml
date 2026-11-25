@@ -1,0 +1,311 @@
+@model SistemHRD.ViewModels.FormInputPenilaianKinerjaViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = $"Input Penilaian Kinerja - {Model.NamaKaryawan}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-action="Penilaian" class="btn btn-outline-secondary rounded-3 px-3">
+                        <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                    </a>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Formulir Penilaian Kinerja Karyawan</h4>
+                        <p class="text-muted small mb-0">
+                            Periode: <strong class="text-dark">@Model.NamaPeriode</strong> &bull;
+                            Karyawan: <strong class="text-dark">@Model.NamaKaryawan (@Model.NIK)</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                        @Model.NamaDepartemen &bull; @Model.NamaJabatan
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                <span>@TempData["PesanError"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <form asp-action="InputPenilaian" method="post" id="formPenilaianKinerja">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="PeriodePenilaianId" />
+        <input type="hidden" asp-for="NamaPeriode" />
+        <input type="hidden" asp-for="KaryawanId" />
+        <input type="hidden" asp-for="NamaKaryawan" />
+        <input type="hidden" asp-for="NIK" />
+        <input type="hidden" asp-for="NamaDepartemen" />
+        <input type="hidden" asp-for="NamaJabatan" />
+
+        <div class="row g-4">
+            <!-- Kolom Kiri: Tabel Indikator KPI Penilaian Berbobot -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0">Rincian Butir Indikator Penilaian KPI</h6>
+                            <small class="text-muted">Skor dihitung secara objektif berdasarkan bobot persentase masing-masing indikator</small>
+                        </div>
+                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill px-3 py-2 fw-semibold">
+                            @Model.DaftarDetail.Count Indikator Terkonfigurasi
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!Model.DaftarDetail.Any())
+                        {
+                            <div class="text-center py-5">
+                                <i data-lucide="alert-circle" class="lucide text-danger mb-2" style="width: 48px; height: 48px;"></i>
+                                <h6 class="fw-semibold text-danger">Tidak Ada Indikator KPI</h6>
+                                <p class="text-muted small">Belum ada indikator KPI aktif yang dikonfigurasikan untuk departemen ini.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table align-middle" id="tabelIndikatorKPI">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 28%;">Indikator KPI</th>
+                                            <th style="width: 14%;">Target</th>
+                                            <th style="width: 16%;">Realisasi</th>
+                                            <th style="width: 12%;" class="text-center">Bobot (%)</th>
+                                            <th style="width: 14%;" class="text-center">Skor (0-100)</th>
+                                            <th style="width: 16%;" class="text-center">Skor Berbobot</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.DaftarDetail.Count; i++)
+                                        {
+                                            <tr class="baris-indikator">
+                                                <td>
+                                                    <input type="hidden" asp-for="DaftarDetail[i].IndikatorKPIId" />
+                                                    <input type="hidden" asp-for="DaftarDetail[i].NamaIndikator" />
+                                                    <input type="hidden" asp-for="DaftarDetail[i].Target" />
+                                                    <input type="hidden" asp-for="DaftarDetail[i].Satuan" />
+
+                                                    <div class="fw-bold text-dark">@Model.DaftarDetail[i].NamaIndikator</div>
+                                                    <div class="mt-1">
+                                                        <input asp-for="DaftarDetail[i].CatatanIndikator" class="form-control form-control-sm rounded-2 text-muted" placeholder="Catatan capaian indikator..." />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="fw-semibold text-muted">@(Model.DaftarDetail[i].Target ?? "-") @(Model.DaftarDetail[i].Satuan ?? "")</div>
+                                                </td>
+                                                <td>
+                                                    <input asp-for="DaftarDetail[i].Realisasi" class="form-control rounded-3" placeholder="Contoh: 95%" />
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="input-group input-group-sm">
+                                                        <input asp-for="DaftarDetail[i].BobotPersen" type="number" step="1" min="1" max="100" class="form-control text-center input-bobot rounded-start-2 fw-semibold" oninput="hitungSkorLive()" />
+                                                        <span class="input-group-text bg-light">%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input asp-for="DaftarDetail[i].SkorIndikator" type="number" step="0.5" min="0" max="100" class="form-control text-center input-skor rounded-3 fw-bold" style="color: #059669;" oninput="hitungSkorLive()" required />
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="fw-bold fs-6 span-skor-tertimbang text-dark">0.0</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="table-light border-top">
+                                        <tr>
+                                            <th colspan="3" class="text-end fw-bold">TOTAL BOBOT & SKOR AKHIR:</th>
+                                            <th class="text-center">
+                                                <span id="labelTotalBobot" class="fw-bold fs-6">100%</span>
+                                            </th>
+                                            <th></th>
+                                            <th class="text-center">
+                                                <span id="labelTotalSkorLive" class="fw-bold fs-5 text-success">0.0</span>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Komentar & Rekomendasi Evaluasi -->
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h6 class="fw-bold text-dark mb-0">Ulasan Evaluator & Rencana Pengembangan</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label asp-for="KomentarEvaluasi" class="form-label fw-semibold">Komentar & Catatan Evaluasi Kinerja <span class="text-danger">*</span></label>
+                            <textarea asp-for="KomentarEvaluasi" rows="4" class="form-control rounded-3" placeholder="Berikan umpan balik konstruktif mengenai kinerja, pencapaian target, dan disiplin kerja karyawan..." required></textarea>
+                            <span asp-validation-for="KomentarEvaluasi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-0">
+                            <label asp-for="RekomendasiPengembangan" class="form-label fw-semibold">Rekomendasi Pengembangan / Training</label>
+                            <textarea asp-for="RekomendasiPengembangan" rows="3" class="form-control rounded-3" placeholder="Saran pelatihan, sertifikasi, rotasi tugas, promosi, atau tindakan perbaikan performa..."></textarea>
+                            <span asp-validation-for="RekomendasiPengembangan" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Ringkasan Skor Live & Keputusan -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 20px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h6 class="fw-bold text-dark mb-0">Ringkasan Skor Evaluasi</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Score Display Box -->
+                        <div class="p-4 rounded-4 text-center mb-4" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0;">
+                            <span class="text-muted small fw-semibold d-block mb-1">PROYEKSI SKOR AKHIR</span>
+                            <h1 class="display-4 fw-bold mb-2 text-success" id="boxSkorAkhir">0.0</h1>
+                            <div class="d-inline-block">
+                                <span class="badge rounded-pill px-4 py-2 fs-6 fw-bold" id="badgePredikatLive" style="background-color: #059669; color: white;">
+                                    Menunggu Penilaian
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Skala Nilai Reference -->
+                        <div class="p-3 bg-light rounded-3 border mb-4 small">
+                            <div class="fw-bold mb-2 text-dark">Standar Predikat Kinerja:</div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="fw-semibold text-success">A (Sangat Baik)</span>
+                                <span>≥ 90.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="fw-semibold text-primary">B (Baik)</span>
+                                <span>80.00 - 89.99</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="fw-semibold text-info">C (Cukup)</span>
+                                <span>70.00 - 79.99</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom">
+                                <span class="fw-semibold text-warning">D (Kurang)</span>
+                                <span>60.00 - 69.99</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span class="fw-semibold text-danger">E (Sangat Kurang)</span>
+                                <span>&lt; 60.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Parameter Tanggal & Status -->
+                        <div class="mb-3">
+                            <label asp-for="TanggalPenilaian" class="form-label fw-semibold">Tanggal Evaluasi <span class="text-danger">*</span></label>
+                            <input asp-for="TanggalPenilaian" type="date" class="form-control rounded-3" />
+                            <span asp-validation-for="TanggalPenilaian" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Status" class="form-label fw-semibold">Status Lembar Penilaian</label>
+                            <select asp-for="Status" class="form-select rounded-3">
+                                <option value="@StatusPenilaianKinerja.Disetujui">Langsung Setujui (Final)</option>
+                                <option value="@StatusPenilaianKinerja.Draf">Simpan Sebagai Draf</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn text-white btn-lg rounded-3" style="background-color: #059669;">
+                                <i data-lucide="check-circle" class="lucide me-1"></i> Simpan Penilaian Kinerja
+                            </button>
+                            <a asp-action="Penilaian" class="btn btn-outline-secondary rounded-3">Batal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        lucide.createIcons();
+
+        function hitungSkorLive() {
+            var rows = document.querySelectorAll('.baris-indikator');
+            var totalBobot = 0;
+
+            // 1. Hitung total bobot
+            rows.forEach(function (row) {
+                var bobotVal = parseFloat(row.querySelector('.input-bobot').value) || 0;
+                totalBobot += bobotVal;
+            });
+
+            document.getElementById('labelTotalBobot').innerText = totalBobot.toFixed(0) + '%';
+            if (Math.abs(totalBobot - 100) > 0.01) {
+                document.getElementById('labelTotalBobot').classList.add('text-danger');
+                document.getElementById('labelTotalBobot').classList.remove('text-success');
+            } else {
+                document.getElementById('labelTotalBobot').classList.add('text-success');
+                document.getElementById('labelTotalBobot').classList.remove('text-danger');
+            }
+
+            // 2. Hitung skor berbobot per baris dan total skor akhir
+            var totalSkorAkhir = 0;
+            var divisor = totalBobot > 0 ? totalBobot : 1;
+
+            rows.forEach(function (row) {
+                var bobotVal = parseFloat(row.querySelector('.input-bobot').value) || 0;
+                var skorVal = parseFloat(row.querySelector('.input-skor').value) || 0;
+
+                var skorTertimbang = (bobotVal / divisor) * skorVal;
+                totalSkorAkhir += skorTertimbang;
+
+                row.querySelector('.span-skor-tertimbang').innerText = skorTertimbang.toFixed(2);
+            });
+
+            // 3. Tampilkan total skor
+            document.getElementById('labelTotalSkorLive').innerText = totalSkorAkhir.toFixed(2);
+            document.getElementById('boxSkorAkhir').innerText = totalSkorAkhir.toFixed(2);
+
+            // 4. Update badge predikat
+            var badge = document.getElementById('badgePredikatLive');
+            if (totalSkorAkhir >= 90) {
+                badge.innerText = 'Predikat A (Sangat Baik)';
+                badge.style.backgroundColor = '#059669';
+                badge.style.color = '#ffffff';
+            } else if (totalSkorAkhir >= 80) {
+                badge.innerText = 'Predikat B (Baik)';
+                badge.style.backgroundColor = '#2563eb';
+                badge.style.color = '#ffffff';
+            } else if (totalSkorAkhir >= 70) {
+                badge.innerText = 'Predikat C (Cukup)';
+                badge.style.backgroundColor = '#0284c7';
+                badge.style.color = '#ffffff';
+            } else if (totalSkorAkhir >= 60) {
+                badge.innerText = 'Predikat D (Kurang)';
+                badge.style.backgroundColor = '#f59e0b';
+                badge.style.color = '#000000';
+            } else {
+                badge.innerText = 'Predikat E (Sangat Kurang)';
+                badge.style.backgroundColor = '#ef4444';
+                badge.style.color = '#ffffff';
+            }
+        }
+
+        // Jalankan perhitungan pertama kali saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function () {
+            hitungSkorLive();
+        });
+    </script>
+}

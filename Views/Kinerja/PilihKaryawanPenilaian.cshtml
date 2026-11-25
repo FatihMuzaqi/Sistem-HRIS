@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Pilih Karyawan untuk Dinilai";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+                <a asp-action="Penilaian" class="btn btn-outline-secondary rounded-3 px-3">
+                    <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Mulai Penilaian Kinerja Karyawan</h4>
+                    <p class="text-muted small mb-0">Pilih periode penilaian aktif dan karyawan yang akan dievaluasi kinerjanya</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="check-circle" class="lucide text-success"></i>
+                <span>@TempData["PesanSukses"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                <span>@TempData["PesanError"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Selection Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="background-color: #ecfdf5; color: #059669; width: 64px; height: 64px;">
+                            <i data-lucide="user-check" class="lucide" style="width: 32px; height: 32px;"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Form Pemilihan Karyawan</h5>
+                        <p class="text-muted small">Sistem akan memuat indikator KPI yang relevan berdasarkan departemen dan jabatan karyawan terpilih.</p>
+                    </div>
+
+                    <form asp-action="InputPenilaian" method="get">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Periode Penilaian <span class="text-danger">*</span></label>
+                            <select name="periodeId" asp-items="ViewBag.DaftarPeriode" class="form-select form-select-lg rounded-3" required>
+                                <option value="">-- Pilih Periode Penilaian --</option>
+                            </select>
+                            <small class="text-muted">Pilih siklus penilaian yang sedang berstatus Aktif.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Karyawan yang Dinilai <span class="text-danger">*</span></label>
+                            <select name="karyawanId" asp-items="ViewBag.DaftarKaryawan" class="form-select form-select-lg rounded-3" required>
+                                <option value="">-- Pilih Karyawan Aktif --</option>
+                            </select>
+                            <small class="text-muted">Cari berdasarkan NIK atau Nama Karyawan.</small>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn text-white btn-lg rounded-3" style="background-color: #059669;">
+                                <i data-lucide="arrow-right-circle" class="lucide me-1"></i> Buka Lembar Penilaian KPI
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}
