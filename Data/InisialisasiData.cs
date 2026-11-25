@@ -998,6 +998,128 @@ public static class InisialisasiData
             }
         }
 
+        // ==========================================
+        // 4. Inisialisasi Data Modul Rekrutmen (Fase 5)
+        // ==========================================
+        var adaLowongan = await context.LowonganKerja
+            .IgnoreQueryFilters()
+            .AnyAsync(l => l.PerusahaanId == perusahaanId1 && l.KodeLowongan == "SR-DEV-2026");
+
+        if (!adaLowongan)
+        {
+            var deptIT = await context.Departemen.IgnoreQueryFilters().FirstOrDefaultAsync(d => d.PerusahaanId == perusahaanId1 && d.KodeDepartemen == "IT");
+            var jabIT = await context.Jabatan.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.PerusahaanId == perusahaanId1 && j.NamaJabatan == "Senior Software Engineer");
+
+            var lowonganSeed = new LowonganKerja
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                KodeLowongan = "SR-DEV-2026",
+                JudulLowongan = "Senior .NET Core Backend Engineer",
+                DepartemenId = deptIT?.Id,
+                JabatanId = jabIT?.Id,
+                DeskripsiPekerjaan = "Bertanggung jawab atas arsitektur backend, REST API, performa basis data, dan modul enterprise SistemHRD.",
+                Kualifikasi = "Pengalaman minimal 3 tahun dengan C#, .NET Core/NET 10, Entity Framework Core, MySQL/SQL Server, serta arsitektur clean monolith.",
+                TipePekerjaan = TipePekerjaan.PenuhWaktu,
+                LokasiKerja = "Jakarta Selatan (Hybrid)",
+                JumlahDibutuhkan = 2,
+                GajiMin = 12000000m,
+                GajiMax = 18000000m,
+                TanggalDibuka = DateTime.Today.AddDays(-14),
+                TanggalDitutup = DateTime.Today.AddMonths(1),
+                Status = StatusLowongan.Dibuka,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+
+            var tahapanBaku = new (string Nama, JenisTahapanSeleksi Jenis, int Urutan)[]
+            {
+                ("Seleksi Administrasi & Berkas", JenisTahapanSeleksi.Administrasi, 1),
+                ("Wawancara HRD & Kepribadian", JenisTahapanSeleksi.WawancaraHR, 2),
+                ("Wawancara Teknis / User", JenisTahapanSeleksi.WawancaraUser, 3),
+                ("Penawaran Kerja (Offering)", JenisTahapanSeleksi.Offering, 4)
+            };
+
+            foreach (var t in tahapanBaku)
+            {
+                lowonganSeed.DaftarTahapanSeleksi.Add(new TahapanSeleksi
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    LowonganKerjaId = lowonganSeed.Id,
+                    NamaTahapan = t.Nama,
+                    JenisTahapan = t.Jenis,
+                    Urutan = t.Urutan,
+                    StatusAktif = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+
+            await context.LowonganKerja.AddAsync(lowonganSeed);
+        }
+
+        // ==========================================
+        // 5. Inisialisasi Data Modul Penilaian Kinerja (Fase 5)
+        // ==========================================
+        // A. Indikator KPI Baku Perusahaan 1
+        var indikatorBaku = new (string Kode, string Nama, string Deskripsi, JenisIndikatorKPI Jenis, decimal Target, string Satuan, decimal Bobot)[]
+        {
+            ("KPI-PRD-01", "Pencapaian Target Kerja & Deliverable Proyek", "Menyelesaikan fitur aplikasi dan backlog tugas sesuai estimasi timeline sprint.", JenisIndikatorKPI.Kuantitatif, 100m, "%", 35.00m),
+            ("KPI-QLT-02", "Kualitas Kode & Standar Pekerjaan", "Mematuhi clean code standards, bebas regresi kritis, dan melengkapi dokumentasi teknis.", JenisIndikatorKPI.Kualitatif, 95m, "Poin", 25.00m),
+            ("KPI-DIS-03", "Kedisiplinan, Kehadiran & SLA Waktu", "Ketepatan waktu kehadiran presensi kerja serta responsivitas penanganan isu operasional.", JenisIndikatorKPI.Kuantitatif, 100m, "%", 20.00m),
+            ("KPI-COL-04", "Kolaborasi Tim, Komunikasi & Inisiatif", "Keaktifan berkoordinasi antardivisi, proaktif memecahkan masalah, dan membantu rekan kerja.", JenisIndikatorKPI.Perilaku, 90m, "Skor", 20.00m)
+        };
+
+        foreach (var kpi in indikatorBaku)
+        {
+            var adaKpi = await context.IndikatorKPI
+                .IgnoreQueryFilters()
+                .AnyAsync(i => i.PerusahaanId == perusahaanId1 && i.KodeIndikator == kpi.Kode);
+
+            if (!adaKpi)
+            {
+                await context.IndikatorKPI.AddAsync(new IndikatorKPI
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    KodeIndikator = kpi.Kode,
+                    NamaIndikator = kpi.Nama,
+                    Deskripsi = kpi.Deskripsi,
+                    Jenis = kpi.Jenis,
+                    TargetKuantitatif = kpi.Target,
+                    Satuan = kpi.Satuan,
+                    BobotBawaan = kpi.Bobot,
+                    StatusAktif = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        // B. Periode Penilaian Kinerja Aktif
+        var adaPeriode = await context.PeriodePenilaian
+            .IgnoreQueryFilters()
+            .AnyAsync(p => p.PerusahaanId == perusahaanId1 && p.NamaPeriode == "Penilaian Kinerja Semester 2 - 2026");
+
+        if (!adaPeriode)
+        {
+            await context.PeriodePenilaian.AddAsync(new PeriodePenilaian
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NamaPeriode = "Penilaian Kinerja Semester 2 - 2026",
+                Tahun = 2026,
+                SemesterAtauKuartal = "Semester 2",
+                TanggalMulai = new DateTime(2026, 7, 1),
+                TanggalSelesai = new DateTime(2026, 12, 31),
+                Status = StatusPeriodePenilaian.Aktif,
+                Catatan = "Siklus evaluasi performa kerja reguler semester genap tahun 2026.",
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
         await context.SaveChangesAsync();
     }
 }

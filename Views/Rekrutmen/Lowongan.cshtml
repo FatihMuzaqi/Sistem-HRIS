@@ -1,0 +1,145 @@
+@model List<SistemHRD.ViewModels.LowonganKerjaItemViewModel>
+@using SistemHRD.Models.Enums
+
+@{
+    ViewData["Title"] = "Daftar Lowongan Pekerjaan";
+    var statusTerpilih = ViewBag.StatusTerpilih as StatusLowongan?;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="h3 fw-bold text-slate-800 mb-1">Manajemen Lowongan Pekerjaan</h1>
+        <p class="text-muted small mb-0">Kelola posisi pekerjaan terbuka, kuota rekrutmen, dan kualifikasi talenta.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+            <span>Dashboard</span>
+        </a>
+        <a asp-action="TambahLowongan" class="btn btn-emerald d-inline-flex align-items-center gap-2 shadow-sm">
+            <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+            <span>Buka Lowongan Baru</span>
+        </a>
+    </div>
+</div>
+
+<!-- Filter Status Tab -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2 d-flex flex-wrap gap-2">
+        <a asp-action="Lowongan" class="btn btn-sm @(!statusTerpilih.HasValue ? "btn-emerald" : "btn-light text-slate-700")">
+            Semua Status
+        </a>
+        <a asp-action="Lowongan" asp-route-status="@StatusLowongan.Dibuka" class="btn btn-sm @(statusTerpilih == StatusLowongan.Dibuka ? "btn-emerald" : "btn-light text-slate-700")">
+            Dibuka
+        </a>
+        <a asp-action="Lowongan" asp-route-status="@StatusLowongan.Draf" class="btn btn-sm @(statusTerpilih == StatusLowongan.Draf ? "btn-emerald" : "btn-light text-slate-700")">
+            Draf
+        </a>
+        <a asp-action="Lowongan" asp-route-status="@StatusLowongan.Ditutup" class="btn btn-sm @(statusTerpilih == StatusLowongan.Ditutup ? "btn-emerald" : "btn-light text-slate-700")">
+            Ditutup
+        </a>
+    </div>
+</div>
+
+<!-- Tabel Lowongan Pekerjaan -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-3 py-3">Kode & Judul Posisi</th>
+                        <th>Departemen / Jabatan</th>
+                        <th>Tipe / Lokasi</th>
+                        <th>Estimasi Gaji</th>
+                        <th class="text-center">Kandidat</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end pe-3">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="badge bg-light text-muted border font-monospace mb-1">@item.KodeLowongan</span>
+                                    <a asp-action="DetailLowongan" asp-route-id="@item.Id" class="d-block fw-bold text-slate-800 text-decoration-none hover-emerald">
+                                        @item.JudulLowongan
+                                    </a>
+                                    <small class="text-muted">Dibuka: @item.TanggalDibuka.ToString("dd MMM yyyy")</small>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-slate-700">@item.NamaDepartemen</div>
+                                    <div class="text-muted small">@item.NamaJabatan</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-slate-700 border">@item.TipePekerjaan</span>
+                                    <div class="text-muted small mt-1">@item.LokasiKerja</div>
+                                </td>
+                                <td>
+                                    @if (item.GajiMin.HasValue && item.GajiMax.HasValue)
+                                    {
+                                        <div class="small font-monospace text-slate-700">Rp @item.GajiMin.Value.ToString("N0") &mdash; @item.GajiMax.Value.ToString("N0")</div>
+                                    }
+                                    else if (item.GajiMin.HasValue)
+                                    {
+                                        <div class="small font-monospace text-slate-700">Min: Rp @item.GajiMin.Value.ToString("N0")</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Negosiasi</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-emerald-light text-emerald px-2 py-1 fw-bold fs-6">
+                                        @item.JumlahPelamar
+                                    </span>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">Pelamar</div>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Status == StatusLowongan.Dibuka)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Dibuka</span>
+                                    }
+                                    else if (item.Status == StatusLowongan.Draf)
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">Draf</span>
+                                    }
+                                    else if (item.Status == StatusLowongan.Ditutup)
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Ditutup</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border px-2 py-1">@item.Status</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a asp-action="DetailLowongan" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Detail Lowongan">
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                        </a>
+                                        <a asp-action="UbahLowongan" asp-route-id="@item.Id" class="btn btn-sm btn-outline-emerald" title="Ubah Lowongan">
+                                            <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i data-lucide="inbox" style="width: 32px; height: 32px;" class="mb-2 text-muted"></i>
+                                <p class="mb-0">Tidak ada lowongan pekerjaan ditemukan pada filter ini.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

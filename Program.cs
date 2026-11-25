@@ -77,6 +77,8 @@ builder.Services.AddScoped<ILayananKehadiran, LayananKehadiran>();
 builder.Services.AddScoped<ILayananCuti, LayananCuti>();
 builder.Services.AddScoped<ILayananKalkulatorGaji, LayananKalkulatorGaji>();
 builder.Services.AddScoped<ILayananPenggajian, LayananPenggajian>();
+builder.Services.AddScoped<ILayananRekrutmen, LayananRekrutmen>();
+builder.Services.AddScoped<ILayananPenilaianKinerja, LayananPenilaianKinerja>();
 
 // 6. Proteksi CSRF (Anti-Forgery Token)
 builder.Services.AddAntiforgery(options =>

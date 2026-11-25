@@ -322,6 +322,83 @@ namespace SistemHRD.Migrations
                     b.ToTable("DetailPenggajian", (string)null);
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.DetailPenilaian", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<decimal>("BobotPersen")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("CatatanIndikator")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("IndikatorKPIId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("NamaIndikatorSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("PenilaianKinerjaId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Realisasi")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<decimal>("SkorIndikator")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("SkorTertimbang")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("TargetSnapshot")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IndikatorKPIId");
+
+                    b.HasIndex("PerusahaanId");
+
+                    b.HasIndex("PenilaianKinerjaId", "IndikatorKPIId")
+                        .IsUnique();
+
+                    b.ToTable("DetailPenilaian", (string)null);
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.DokumenKaryawan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -457,6 +534,175 @@ namespace SistemHRD.Migrations
                     b.ToTable("GajiKaryawan", (string)null);
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.HasilSeleksi", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CatatanEvaluasi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid?>("JadwalWawancaraId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Kekurangan")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Kelebihan")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("Keputusan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NamaPenilai")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("PelamarId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PenilaiId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<decimal>("Skor")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid?>("TahapanSeleksiId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("TanggalPenilaian")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JadwalWawancaraId");
+
+                    b.HasIndex("PelamarId");
+
+                    b.HasIndex("PenilaiId");
+
+                    b.HasIndex("TahapanSeleksiId");
+
+                    b.HasIndex("PerusahaanId", "PelamarId");
+
+                    b.ToTable("HasilSeleksi", (string)null);
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.IndikatorKPI", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<decimal>("BobotBawaan")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("DepartemenId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Deskripsi")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid?>("JabatanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Jenis")
+                        .HasColumnType("int");
+
+                    b.Property<string>("KodeIndikator")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("NamaIndikator")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Satuan")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("StatusAktif")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<decimal?>("TargetKuantitatif")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartemenId");
+
+                    b.HasIndex("JabatanId");
+
+                    b.HasIndex("PerusahaanId", "DepartemenId");
+
+                    b.HasIndex("PerusahaanId", "KodeIndikator")
+                        .IsUnique();
+
+                    b.ToTable("IndikatorKPI", (string)null);
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.Jabatan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -575,6 +821,92 @@ namespace SistemHRD.Migrations
                     b.HasIndex("PerusahaanId", "KaryawanId", "Tanggal");
 
                     b.ToTable("JadwalKerja", (string)null);
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.JadwalWawancara", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CatatanUndangan")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<TimeSpan>("JamMulai")
+                        .HasColumnType("time(6)");
+
+                    b.Property<TimeSpan>("JamSelesai")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("LokasiAtauTautan")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("Metode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NamaPewawancara")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("PelamarId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("PewawancaraId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TahapanSeleksiId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("TanggalWawancara")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PelamarId");
+
+                    b.HasIndex("PewawancaraId");
+
+                    b.HasIndex("TahapanSeleksiId");
+
+                    b.HasIndex("PerusahaanId", "PelamarId");
+
+                    b.HasIndex("PerusahaanId", "TanggalWawancara");
+
+                    b.ToTable("JadwalWawancara", (string)null);
                 });
 
             modelBuilder.Entity("SistemHRD.Models.Entitas.JenisCuti", b =>
@@ -1198,6 +1530,213 @@ namespace SistemHRD.Migrations
                     b.ToTable("KontrakKerja", (string)null);
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.LowonganKerja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("DepartemenId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("DeskripsiPekerjaan")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal?>("GajiMax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("GajiMin")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid?>("JabatanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("JudulLowongan")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<int>("JumlahDibutuhkan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("KodeLowongan")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Kualifikasi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LokasiKerja")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TanggalDibuka")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("TanggalDitutup")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("TipePekerjaan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartemenId");
+
+                    b.HasIndex("JabatanId");
+
+                    b.HasIndex("PerusahaanId", "KodeLowongan")
+                        .IsUnique();
+
+                    b.HasIndex("PerusahaanId", "Status");
+
+                    b.ToTable("LowonganKerja", (string)null);
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.Pelamar", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CatatanAdministrasi")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<decimal?>("GajiDiharapkan")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("JalurFileCV")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Jurusan")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("KaryawanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("LowonganKerjaId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("NamaFileCV")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("NamaInstitusi")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("NamaLengkap")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("NomorRegistrasi")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("NomorTelepon")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("PendidikanTerakhir")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<decimal>("PengalamanKerjaTahun")
+                        .HasColumnType("decimal(4,1)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KaryawanId");
+
+                    b.HasIndex("LowonganKerjaId");
+
+                    b.HasIndex("PerusahaanId", "LowonganKerjaId");
+
+                    b.HasIndex("PerusahaanId", "NomorRegistrasi")
+                        .IsUnique();
+
+                    b.HasIndex("PerusahaanId", "Status");
+
+                    b.ToTable("Pelamar", (string)null);
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.PengajuanCuti", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1648,6 +2187,89 @@ namespace SistemHRD.Migrations
                     b.ToTable("PenggunaPerusahaan", (string)null);
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PenilaianKinerja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("KaryawanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("KomentarEvaluasi")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NamaPenilai")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<Guid>("PenilaiId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PeriodePenilaianId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("PredikatKinerja")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RekomendasiPengembangan")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TanggalPenilaian")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("TotalSkorAkhir")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KaryawanId");
+
+                    b.HasIndex("PenilaiId");
+
+                    b.HasIndex("PeriodePenilaianId", "KaryawanId")
+                        .IsUnique();
+
+                    b.HasIndex("PerusahaanId", "KaryawanId");
+
+                    b.HasIndex("PerusahaanId", "PeriodePenilaianId");
+
+                    b.ToTable("PenilaianKinerja", (string)null);
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.Peran", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1767,6 +2389,74 @@ namespace SistemHRD.Migrations
                         .IsUnique();
 
                     b.ToTable("PeriodePenggajian", (string)null);
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PeriodePenilaian", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Catatan")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("NamaPeriode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("SemesterAtauKuartal")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Tahun")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TanggalMulai")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("TanggalSelesai")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerusahaanId", "Status");
+
+                    b.HasIndex("PerusahaanId", "Tahun", "NamaPeriode")
+                        .IsUnique();
+
+                    b.ToTable("PeriodePenilaian", (string)null);
                 });
 
             modelBuilder.Entity("SistemHRD.Models.Entitas.PersetujuanCuti", b =>
@@ -2183,6 +2873,69 @@ namespace SistemHRD.Migrations
                     b.ToTable("SlipGaji", (string)null);
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.TahapanSeleksi", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("JenisTahapan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Keterangan")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid>("LowonganKerjaId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("NamaTahapan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid>("PerusahaanId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("StatusAktif")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Urutan")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LowonganKerjaId");
+
+                    b.HasIndex("PerusahaanId", "LowonganKerjaId", "Urutan");
+
+                    b.ToTable("TahapanSeleksi", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("SistemHRD.Models.Entitas.Peran", null)
@@ -2295,6 +3048,33 @@ namespace SistemHRD.Migrations
                     b.Navigation("Perusahaan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.DetailPenilaian", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.IndikatorKPI", "IndikatorKPI")
+                        .WithMany()
+                        .HasForeignKey("IndikatorKPIId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.PenilaianKinerja", "PenilaianKinerja")
+                        .WithMany("DaftarDetailPenilaian")
+                        .HasForeignKey("PenilaianKinerjaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IndikatorKPI");
+
+                    b.Navigation("PenilaianKinerja");
+
+                    b.Navigation("Perusahaan");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.DokumenKaryawan", b =>
                 {
                     b.HasOne("SistemHRD.Models.Entitas.Karyawan", "Karyawan")
@@ -2337,6 +3117,72 @@ namespace SistemHRD.Migrations
                     b.Navigation("Karyawan");
 
                     b.Navigation("KomponenGaji");
+
+                    b.Navigation("Perusahaan");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.HasilSeleksi", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.JadwalWawancara", "JadwalWawancara")
+                        .WithMany()
+                        .HasForeignKey("JadwalWawancaraId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.Pelamar", "Pelamar")
+                        .WithMany("DaftarHasilSeleksi")
+                        .HasForeignKey("PelamarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Pengguna", "Penilai")
+                        .WithMany()
+                        .HasForeignKey("PenilaiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.TahapanSeleksi", "TahapanSeleksi")
+                        .WithMany()
+                        .HasForeignKey("TahapanSeleksiId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("JadwalWawancara");
+
+                    b.Navigation("Pelamar");
+
+                    b.Navigation("Penilai");
+
+                    b.Navigation("Perusahaan");
+
+                    b.Navigation("TahapanSeleksi");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.IndikatorKPI", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Departemen", "Departemen")
+                        .WithMany()
+                        .HasForeignKey("DepartemenId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.Jabatan", "Jabatan")
+                        .WithMany()
+                        .HasForeignKey("JabatanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Departemen");
+
+                    b.Navigation("Jabatan");
 
                     b.Navigation("Perusahaan");
                 });
@@ -2385,6 +3231,39 @@ namespace SistemHRD.Migrations
                     b.Navigation("Perusahaan");
 
                     b.Navigation("ShiftKerja");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.JadwalWawancara", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Pelamar", "Pelamar")
+                        .WithMany("DaftarJadwalWawancara")
+                        .HasForeignKey("PelamarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Pengguna", "Pewawancara")
+                        .WithMany()
+                        .HasForeignKey("PewawancaraId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.TahapanSeleksi", "TahapanSeleksi")
+                        .WithMany()
+                        .HasForeignKey("TahapanSeleksiId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Pelamar");
+
+                    b.Navigation("Perusahaan");
+
+                    b.Navigation("Pewawancara");
+
+                    b.Navigation("TahapanSeleksi");
                 });
 
             modelBuilder.Entity("SistemHRD.Models.Entitas.JenisCuti", b =>
@@ -2518,6 +3397,57 @@ namespace SistemHRD.Migrations
                     b.Navigation("Perusahaan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.LowonganKerja", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Departemen", "Departemen")
+                        .WithMany()
+                        .HasForeignKey("DepartemenId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.Jabatan", "Jabatan")
+                        .WithMany()
+                        .HasForeignKey("JabatanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Departemen");
+
+                    b.Navigation("Jabatan");
+
+                    b.Navigation("Perusahaan");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.Pelamar", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Karyawan", "Karyawan")
+                        .WithMany()
+                        .HasForeignKey("KaryawanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SistemHRD.Models.Entitas.LowonganKerja", "LowonganKerja")
+                        .WithMany("DaftarPelamar")
+                        .HasForeignKey("LowonganKerjaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Karyawan");
+
+                    b.Navigation("LowonganKerja");
+
+                    b.Navigation("Perusahaan");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.PengajuanCuti", b =>
                 {
                     b.HasOne("SistemHRD.Models.Entitas.JenisCuti", "JenisCuti")
@@ -2633,6 +3563,41 @@ namespace SistemHRD.Migrations
                     b.Navigation("Perusahaan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PenilaianKinerja", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Karyawan", "Karyawan")
+                        .WithMany()
+                        .HasForeignKey("KaryawanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Pengguna", "Penilai")
+                        .WithMany()
+                        .HasForeignKey("PenilaiId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.PeriodePenilaian", "PeriodePenilaian")
+                        .WithMany("DaftarPenilaianKinerja")
+                        .HasForeignKey("PeriodePenilaianId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Karyawan");
+
+                    b.Navigation("Penilai");
+
+                    b.Navigation("PeriodePenilaian");
+
+                    b.Navigation("Perusahaan");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.PeriodePenggajian", b =>
                 {
                     b.HasOne("SistemHRD.Models.Entitas.Pengguna", "DiajukanOleh")
@@ -2654,6 +3619,17 @@ namespace SistemHRD.Migrations
                     b.Navigation("DiajukanOleh");
 
                     b.Navigation("DisetujuiOleh");
+
+                    b.Navigation("Perusahaan");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PeriodePenilaian", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Perusahaan");
                 });
@@ -2768,6 +3744,25 @@ namespace SistemHRD.Migrations
                     b.Navigation("Perusahaan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.TahapanSeleksi", b =>
+                {
+                    b.HasOne("SistemHRD.Models.Entitas.LowonganKerja", "LowonganKerja")
+                        .WithMany("DaftarTahapanSeleksi")
+                        .HasForeignKey("LowonganKerjaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistemHRD.Models.Entitas.Perusahaan", "Perusahaan")
+                        .WithMany()
+                        .HasForeignKey("PerusahaanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LowonganKerja");
+
+                    b.Navigation("Perusahaan");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.Departemen", b =>
                 {
                     b.Navigation("DaftarJabatan");
@@ -2819,6 +3814,20 @@ namespace SistemHRD.Migrations
                     b.Navigation("DaftarGajiKaryawan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.LowonganKerja", b =>
+                {
+                    b.Navigation("DaftarPelamar");
+
+                    b.Navigation("DaftarTahapanSeleksi");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.Pelamar", b =>
+                {
+                    b.Navigation("DaftarHasilSeleksi");
+
+                    b.Navigation("DaftarJadwalWawancara");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.PengajuanCuti", b =>
                 {
                     b.Navigation("DaftarPersetujuan");
@@ -2836,9 +3845,19 @@ namespace SistemHRD.Migrations
                     b.Navigation("DaftarPenggunaPerusahaan");
                 });
 
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PenilaianKinerja", b =>
+                {
+                    b.Navigation("DaftarDetailPenilaian");
+                });
+
             modelBuilder.Entity("SistemHRD.Models.Entitas.PeriodePenggajian", b =>
                 {
                     b.Navigation("DaftarPenggajian");
+                });
+
+            modelBuilder.Entity("SistemHRD.Models.Entitas.PeriodePenilaian", b =>
+                {
+                    b.Navigation("DaftarPenilaianKinerja");
                 });
 
             modelBuilder.Entity("SistemHRD.Models.Entitas.Perusahaan", b =>

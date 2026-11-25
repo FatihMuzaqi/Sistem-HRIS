@@ -1,0 +1,150 @@
+@model SistemHRD.ViewModels.FormLowonganKerjaViewModel
+@using SistemHRD.Models.Enums
+
+@{
+    ViewData["Title"] = "Buka Lowongan Pekerjaan Baru";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="h3 fw-bold text-slate-800 mb-1">Buka Lowongan Pekerjaan Baru</h1>
+        <p class="text-muted small mb-0">Publikasikan posisi lowongan baru beserta kualifikasi dan estimasi kompensasi.</p>
+    </div>
+    <a asp-action="Lowongan" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+        <span>Kembali</span>
+    </a>
+</div>
+
+<form asp-action="TambahLowongan" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-4">
+        <!-- Kolom Kiri: Informasi Utama -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold text-slate-800 mb-0">Informasi Lowongan</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="KodeLowongan" class="form-label small fw-semibold text-slate-700">Kode Lowongan <span class="text-danger">*</span></label>
+                            <input asp-for="KodeLowongan" class="form-control font-monospace" placeholder="LOW-202611-001" />
+                            <span asp-validation-for="KodeLowongan" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="JudulLowongan" class="form-label small fw-semibold text-slate-700">Judul Posisi Pekerjaan <span class="text-danger">*</span></label>
+                            <input asp-for="JudulLowongan" class="form-control" placeholder="Contoh: Senior Backend Engineer (.NET)" />
+                            <span asp-validation-for="JudulLowongan" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="DepartemenId" class="form-label small fw-semibold text-slate-700">Departemen</label>
+                            <select asp-for="DepartemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select">
+                                <option value="">-- Pilih Departemen --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="JabatanId" class="form-label small fw-semibold text-slate-700">Jabatan / Posisi</label>
+                            <select asp-for="JabatanId" asp-items="ViewBag.DaftarJabatan" class="form-select">
+                                <option value="">-- Pilih Jabatan --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DeskripsiPekerjaan" class="form-label small fw-semibold text-slate-700">Deskripsi Tugas & Tanggung Jawab <span class="text-danger">*</span></label>
+                        <textarea asp-for="DeskripsiPekerjaan" class="form-control" rows="5" placeholder="Tuliskan gambaran pekerjaan, tanggung jawab utama, dan peran dalam tim..."></textarea>
+                        <span asp-validation-for="DeskripsiPekerjaan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-0">
+                        <label asp-for="Kualifikasi" class="form-label small fw-semibold text-slate-700">Persyaratan & Kualifikasi Kandidat <span class="text-danger">*</span></label>
+                        <textarea asp-for="Kualifikasi" class="form-control" rows="5" placeholder="Tuliskan persyaratan pendidikan, keahlian teknis (hard skills), soft skills, dan pengalaman kerja..."></textarea>
+                        <span asp-validation-for="Kualifikasi" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Pengaturan & Kompensasi -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold text-slate-800 mb-0">Ketentuan & Jadwal</h6>
+                </div>
+                <div class="card-body p-3">
+                    <div class="mb-3">
+                        <label asp-for="TipePekerjaan" class="form-label small fw-semibold text-slate-700">Tipe Kontrak Kerja</label>
+                        <select asp-for="TipePekerjaan" class="form-select">
+                            <option value="1">Penuh Waktu (Full-time)</option>
+                            <option value="2">Paruh Waktu (Part-time)</option>
+                            <option value="3">Kontrak (PKWT)</option>
+                            <option value="4">Magang (Internship)</option>
+                            <option value="5">Remote / Jarak Jauh</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="LokasiKerja" class="form-label small fw-semibold text-slate-700">Lokasi Penempatan Kerja</label>
+                        <input asp-for="LokasiKerja" class="form-control" placeholder="Contoh: Jakarta Selatan (Hybrid)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="JumlahDibutuhkan" class="form-label small fw-semibold text-slate-700">Kuota / Jumlah Kebutuhan (Orang)</label>
+                        <input asp-for="JumlahDibutuhkan" type="number" min="1" class="form-control font-monospace" />
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label asp-for="TanggalDibuka" class="form-label small fw-semibold text-slate-700">Tanggal Buka</label>
+                            <input asp-for="TanggalDibuka" type="date" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="TanggalDitutup" class="form-label small fw-semibold text-slate-700">Batas Akhir</label>
+                            <input asp-for="TanggalDitutup" type="date" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label small fw-semibold text-slate-700">Status Lowongan</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="2">Dibuka (Aktif)</option>
+                            <option value="1">Draf (Disimpan Dulu)</option>
+                            <option value="3">Ditutup</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-3 text-muted" />
+
+                    <h6 class="fw-bold text-slate-800 small mb-2">Rentang Kompensasi (Opsional)</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label asp-for="GajiMin" class="form-label small text-muted">Gaji Min (Rp)</label>
+                            <input asp-for="GajiMin" type="number" step="500000" class="form-control font-monospace form-control-sm" placeholder="10.000.000" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="GajiMax" class="form-label small text-muted">Gaji Max (Rp)</label>
+                            <input asp-for="GajiMax" type="number" step="500000" class="form-control font-monospace form-control-sm" placeholder="15.000.000" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-emerald d-inline-flex align-items-center justify-content-center gap-2 shadow-sm py-2">
+                    <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                    <span>Simpan & Publikasikan Lowongan</span>
+                </button>
+                <a asp-action="Lowongan" class="btn btn-outline-secondary">Batal</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
