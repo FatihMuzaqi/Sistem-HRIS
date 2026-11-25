@@ -1,0 +1,179 @@
+@model List<SistemHRD.ViewModels.PenilaianKinerjaItemViewModel>
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = "Riwayat Penilaian Kinerja Saya";
+
+    var penilaianTerakhir = Model.OrderByDescending(x => x.TanggalPenilaian).FirstOrDefault();
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-4 text-white d-flex align-items-center justify-content-center" style="background-color: #059669; width: 56px; height: 56px;">
+                        <i data-lucide="award" class="lucide" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Riwayat Evaluasi Kinerja Saya</h4>
+                        <p class="text-muted small mb-0">Lihat hasil evaluasi capaian target KPI dan ulasan performa dari atasan</p>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                        @ViewBag.NamaKaryawan
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                <span>@TempData["PesanError"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stat Metrik Diri -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold d-block mb-1">Total Siklus Evaluasi</span>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.Count</h3>
+                        <small class="text-muted">Lembar Penilaian</small>
+                    </div>
+                    <div class="p-3 rounded-4 bg-primary-subtle text-primary">
+                        <i data-lucide="calendar" class="lucide" style="width: 28px; height: 28px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold d-block mb-1">Skor Evaluasi Terakhir</span>
+                        <h3 class="fw-bold mb-0 text-success">@(penilaianTerakhir != null ? penilaianTerakhir.TotalSkorAkhir.ToString("F1") : "-")</h3>
+                        <small class="text-muted">@(penilaianTerakhir?.NamaPeriode ?? "Belum ada evaluasi")</small>
+                    </div>
+                    <div class="p-3 rounded-4 bg-success-subtle text-success">
+                        <i data-lucide="trending-up" class="lucide" style="width: 28px; height: 28px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold d-block mb-1">Predikat Terakhir</span>
+                        <h4 class="fw-bold mb-0 text-dark">@(penilaianTerakhir != null ? penilaianTerakhir.PredikatKinerja.ToString() : "-")</h4>
+                        <small class="text-muted">Tercatat dalam Sistem</small>
+                    </div>
+                    <div class="p-3 rounded-4 bg-info-subtle text-info">
+                        <i data-lucide="star" class="lucide" style="width: 28px; height: 28px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Riwayat Penilaian -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-body p-4">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i data-lucide="award" class="lucide text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                    <h6 class="fw-semibold text-dark">Belum Ada Penilaian Kinerja</h6>
+                    <p class="text-muted small">Atasan belum menerbitkan lembar penilaian performa kerja untuk akun Anda.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Periode Evaluasi</th>
+                                <th>Atasan Penilai</th>
+                                <th>Tanggal Penilaian</th>
+                                <th class="text-center">Skor Akhir</th>
+                                <th class="text-center">Predikat</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                string predikatBadge = item.PredikatKinerja switch
+                                {
+                                    KategoriKinerja.Istimewa => "bg-success text-white",
+                                    KategoriKinerja.Baik => "bg-primary text-white",
+                                    KategoriKinerja.Cukup => "bg-info text-dark",
+                                    KategoriKinerja.Kurang => "bg-warning text-dark",
+                                    KategoriKinerja.SangatKurang => "bg-danger text-white",
+                                    _ => "bg-secondary text-white"
+                                };
+
+                                string statusBadge = item.Status switch
+                                {
+                                    StatusPenilaianKinerja.Disetujui => "bg-success-subtle text-success-emphasis",
+                                    StatusPenilaianKinerja.MenungguPersetujuan => "bg-info-subtle text-info-emphasis",
+                                    StatusPenilaianKinerja.Draf => "bg-warning-subtle text-warning-emphasis",
+                                    _ => "bg-light text-muted"
+                                };
+
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@item.NamaPeriode</div>
+                                        <small class="text-muted">@item.NamaDepartemen &bull; @item.NamaJabatan</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold text-dark">@item.NamaPenilai</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@item.TanggalPenilaian.ToString("dd MMM yyyy")</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold fs-5 text-dark">@item.TotalSkorAkhir.ToString("F1")</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @predikatBadge rounded-pill px-3 py-1">@item.PredikatKinerja</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @statusBadge rounded-pill px-3 py-1">@item.Status</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="DetailPenilaian" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-3">
+                                            <i data-lucide="file-text" class="lucide me-1" style="width: 14px; height: 14px;"></i> Lihat Lembar Evaluasi
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

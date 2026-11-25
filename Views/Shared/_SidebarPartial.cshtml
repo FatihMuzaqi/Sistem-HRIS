@@ -69,11 +69,11 @@
                 <i data-lucide="banknote"></i>
                 <span>Penggajian (Payroll)</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Rekrutmen" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Rekrutmen" ? "active" : "")">
                 <i data-lucide="user-plus"></i>
-                <span>Rekrutmen</span>
+                <span>Rekrutmen & Pelamar</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Kinerja" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kinerja" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
                 <i data-lucide="award"></i>
                 <span>Penilaian Kinerja</span>
             </a>
@@ -90,9 +90,13 @@
                 <i data-lucide="check-square"></i>
                 <span>Persetujuan Cuti/Lembur</span>
             </a>
-            <a href="#" class="nav-link-item">
+            <a asp-controller="Kinerja" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kinerja" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
                 <i data-lucide="trending-up"></i>
-                <span>Evaluasi Kinerja</span>
+                <span>Evaluasi Kinerja Tim</span>
+            </a>
+            <a asp-controller="Rekrutmen" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Rekrutmen" ? "active" : "")">
+                <i data-lucide="user-plus"></i>
+                <span>Wawancara & Pelamar</span>
             </a>
         }
 
@@ -121,6 +125,10 @@
         <a asp-controller="Penggajian" asp-action="Riwayat" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Penggajian" && ViewContext.RouteData.Values["action"]?.ToString() == "Riwayat" ? "active" : "")">
             <i data-lucide="receipt"></i>
             <span>Slip Gaji Saya</span>
+        </a>
+        <a asp-controller="Kinerja" asp-action="RiwayatSaya" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kinerja" && ViewContext.RouteData.Values["action"]?.ToString() == "RiwayatSaya" ? "active" : "")">
+            <i data-lucide="award"></i>
+            <span>Evaluasi Kinerja Saya</span>
         </a>
 
         <div class="menu-category">Akun</div>

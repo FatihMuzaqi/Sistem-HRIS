@@ -1,0 +1,260 @@
+@model SistemHRD.ViewModels.DetailPenilaianKinerjaViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = $"Lembar Penilaian Kinerja - {Model.NamaKaryawan}";
+
+    string predikatBadgeClass = Model.PredikatKinerja switch
+    {
+        KategoriKinerja.Istimewa => "bg-success text-white",
+        KategoriKinerja.Baik => "bg-primary text-white",
+        KategoriKinerja.Cukup => "bg-info text-dark",
+        KategoriKinerja.Kurang => "bg-warning text-dark",
+        KategoriKinerja.SangatKurang => "bg-danger text-white",
+        _ => "bg-secondary text-white"
+    };
+
+    string statusBadgeClass = Model.Status switch
+    {
+        StatusPenilaianKinerja.Disetujui => "bg-success-subtle text-success-emphasis border border-success-subtle",
+        StatusPenilaianKinerja.MenungguPersetujuan => "bg-info-subtle text-info-emphasis border border-info-subtle",
+        StatusPenilaianKinerja.Draf => "bg-warning-subtle text-warning-emphasis border border-warning-subtle",
+        _ => "bg-light text-muted"
+    };
+}
+
+<div class="container-fluid py-3">
+    <!-- Header (No Print) -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white d-print-none">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-action="Penilaian" class="btn btn-outline-secondary rounded-3 px-3">
+                        <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali ke Daftar
+                    </a>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Lembar Hasil Evaluasi Kinerja</h4>
+                        <p class="text-muted small mb-0">Rincian skor tertimbang dan evaluasi objektif karyawan</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" onclick="window.print()" class="btn btn-outline-primary rounded-3 px-3">
+                        <i data-lucide="printer" class="lucide me-1"></i> Cetak Dokumen
+                    </button>
+                    @if (User.IsInRole(SistemHRD.Common.Constants.NamaPeran.SuperAdmin) || User.IsInRole(SistemHRD.Common.Constants.NamaPeran.HRD))
+                    {
+                        <a asp-action="InputPenilaian" asp-route-periodeId="@Model.PeriodePenilaianId" asp-route-karyawanId="@Model.KaryawanId" class="btn text-white rounded-3 px-3" style="background-color: #059669;">
+                            <i data-lucide="edit-3" class="lucide me-1"></i> Ubah Evaluasi
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Document Sheet -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 mb-4" id="lembarPenilaianResmi">
+        <!-- Document Header -->
+        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-4 text-white d-flex align-items-center justify-content-center" style="background-color: #059669; width: 60px; height: 60px;">
+                    <i data-lucide="award" class="lucide" style="width: 32px; height: 32px;"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-dark mb-0">LEMBAR PENILAIAN KINERJA KARYAWAN</h4>
+                    <span class="text-muted fw-semibold">SISTEM INFORMASI MANAJEMEN SDM (SistemHRD)</span>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="badge @statusBadgeClass rounded-pill px-3 py-2 fw-bold fs-6">
+                    STATUS: @Model.Status
+                </span>
+                <div class="small text-muted mt-1">Tanggal: @Model.TanggalPenilaian.ToString("dd MMMM yyyy")</div>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Identitas Karyawan</h6>
+                    <div class="row g-2 small">
+                        <div class="col-4 text-muted">Nama Lengkap:</div>
+                        <div class="col-8 fw-bold text-dark">@Model.NamaKaryawan</div>
+
+                        <div class="col-4 text-muted">Nomor Induk (NIK):</div>
+                        <div class="col-8 fw-semibold font-monospace">@Model.NIK</div>
+
+                        <div class="col-4 text-muted">Departemen:</div>
+                        <div class="col-8 fw-semibold">@Model.NamaDepartemen</div>
+
+                        <div class="col-4 text-muted">Jabatan:</div>
+                        <div class="col-8 fw-semibold">@Model.NamaJabatan</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Informasi Siklus Evaluasi</h6>
+                    <div class="row g-2 small">
+                        <div class="col-4 text-muted">Periode:</div>
+                        <div class="col-8 fw-bold text-dark">@Model.NamaPeriode</div>
+
+                        <div class="col-4 text-muted">Tahun Anggaran:</div>
+                        <div class="col-8 fw-semibold">Tahun @Model.TahunPeriode</div>
+
+                        <div class="col-4 text-muted">Atasan Penilai:</div>
+                        <div class="col-8 fw-semibold">@Model.NamaPenilai</div>
+
+                        <div class="col-4 text-muted">Tanggal Selesai:</div>
+                        <div class="col-8 fw-semibold">@Model.TanggalPenilaian.ToString("dd MMM yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score & Predicate Highlight Box -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column justify-content-center" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
+                    <span class="text-muted small fw-semibold d-block mb-1">TOTAL SKOR AKHIR (TERTIMBANG)</span>
+                    <h1 class="display-3 fw-bold mb-0 text-success">@Model.TotalSkorAkhir.ToString("F2")</h1>
+                    <span class="text-muted small">Skala Penilaian: 0.00 s/d 100.00</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 text-center h-100 d-flex flex-column justify-content-center" style="background-color: #eff6ff; border: 1px solid #bfdbfe;">
+                    <span class="text-muted small fw-semibold d-block mb-2">PREDIKAT KINERJA</span>
+                    <div>
+                        <span class="badge @predikatBadgeClass rounded-pill px-4 py-2 fs-5 fw-bold">
+                            @Model.PredikatKinerja
+                        </span>
+                    </div>
+                    <span class="text-muted small mt-2">
+                        @(Model.PredikatKinerja switch {
+                            KategoriKinerja.Istimewa => "Kinerja Istimewa, melampaui seluruh target yang ditetapkan",
+                            KategoriKinerja.Baik => "Kinerja Sangat Baik, memenuhi ekspektasi dan target pekerjaan",
+                            KategoriKinerja.Cukup => "Kinerja Cukup Memuaskan, memenuhi standar minimal organisasi",
+                            KategoriKinerja.Kurang => "Kinerja Membutuhkan Pembinaan, belum mencapai target utama",
+                            _ => "Kinerja Tidak Memenuhi Standar, memerlukan tindakan evaluasi mendalam"
+                        })
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Breakdown Table -->
+        <h6 class="fw-bold text-dark mb-3">Rincian Butir Penilaian Indikator KPI</h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width: 5%;">No</th>
+                        <th style="width: 30%;">Indikator KPI</th>
+                        <th style="width: 12%;">Target</th>
+                        <th style="width: 12%;">Realisasi</th>
+                        <th class="text-center" style="width: 10%;">Bobot</th>
+                        <th class="text-center" style="width: 13%;">Skor Murni</th>
+                        <th class="text-center" style="width: 18%;">Skor Tertimbang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int no = 1;
+                        decimal totalBobot = 0;
+                        decimal totalTertimbang = 0;
+                    }
+                    @foreach (var d in Model.DaftarDetail)
+                    {
+                        totalBobot += d.BobotPersen;
+                        totalTertimbang += d.SkorTertimbang;
+
+                        <tr>
+                            <td class="text-center fw-semibold">@(no++)</td>
+                            <td>
+                                <div class="fw-bold text-dark">@d.NamaIndikator</div>
+                                @if (!string.IsNullOrWhiteSpace(d.CatatanIndikator))
+                                {
+                                    <small class="text-muted d-block mt-1">Catatan: @d.CatatanIndikator</small>
+                                }
+                            </td>
+                            <td>@(d.Target ?? "-")</td>
+                            <td>@(d.Realisasi ?? "-")</td>
+                            <td class="text-center fw-semibold">@d.BobotPersen.ToString("G29")%</td>
+                            <td class="text-center fw-bold text-dark">@d.SkorIndikator.ToString("F1")</td>
+                            <td class="text-center fw-bold text-success">@d.SkorTertimbang.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light border-top">
+                    <tr>
+                        <th colspan="4" class="text-end fw-bold">TOTAL:</th>
+                        <th class="text-center fw-bold">@totalBobot.ToString("G29")%</th>
+                        <th></th>
+                        <th class="text-center fw-bold fs-6 text-success">@totalTertimbang.ToString("F2")</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Ulasan Evaluasi & Rekomendasi -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <h6 class="fw-bold text-dark mb-2">Ulasan / Komentar Evaluasi Kinerja</h6>
+                    <p class="text-dark small mb-0" style="white-space: pre-line;">@Model.KomentarEvaluasi</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 border h-100">
+                    <h6 class="fw-bold text-dark mb-2">Rekomendasi Pengembangan Karyawan</h6>
+                    <p class="text-muted small mb-0" style="white-space: pre-line;">
+                        @(string.IsNullOrWhiteSpace(Model.RekomendasiPengembangan) ? "Tidak ada catatan rekomendasi khusus." : Model.RekomendasiPengembangan)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Block -->
+        <div class="row text-center mt-5 pt-4">
+            <div class="col-4">
+                <p class="small text-muted mb-5">Karyawan yang Dinilai,</p>
+                <div class="fw-bold text-dark text-decoration-underline">@Model.NamaKaryawan</div>
+                <small class="text-muted d-block">NIK: @Model.NIK</small>
+            </div>
+            <div class="col-4">
+                <p class="small text-muted mb-5">Atasan Penilai / Manager,</p>
+                <div class="fw-bold text-dark text-decoration-underline">@Model.NamaPenilai</div>
+                <small class="text-muted d-block">Tanggal: @Model.TanggalPenilaian.ToString("dd/MM/yyyy")</small>
+            </div>
+            <div class="col-4">
+                <p class="small text-muted mb-5">Mengetahui / Verifikasi HRD,</p>
+                <div class="fw-bold text-dark text-decoration-underline">Divisi HR & Personalia</div>
+                <small class="text-muted d-block">SistemHRD Terverifikasi</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        body {
+            background-color: #ffffff !important;
+        }
+        .d-print-none, .sidebar, .navbar, footer {
+            display: none !important;
+        }
+        #lembarPenilaianResmi {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

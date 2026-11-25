@@ -143,3 +143,52 @@
 | `POST` | `/Penggajian/SimpanGajiKaryawan` | `SuperAdmin`, `HRD`, `Finance` | Simpan struktur gaji rutin dan data perpajakan karyawan |
 | `GET` | `/Penggajian/Kebijakan` | `SuperAdmin`, `HRD`, `Finance` | Form konfigurasi kebijakan tarif & aturan penggajian tenant (lembur, denda telat, BPJS, TER PPh 21, cutoff) |
 | `POST` | `/Penggajian/SimpanKebijakan` | `SuperAdmin`, `HRD`, `Finance` | Simpan perubahan kebijakan penggajian tenant |
+
+---
+
+### 2.10 Modul Rekrutmen (`RekrutmenController`)
+| HTTP Method | Route URL | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/Rekrutmen` | `SuperAdmin`, `HRD`, `Manager` | Dashboard analitik rekrutmen: ringkasan metrik, grafik Chart.js status pelamar, pipeline |
+| `GET` | `/Rekrutmen/Lowongan` | `SuperAdmin`, `HRD`, `Manager` | Daftar posisi lowongan kerja dengan filter status & tab |
+| `GET` | `/Rekrutmen/TambahLowongan` | `SuperAdmin`, `HRD` | Form pembuatan lowongan kerja baru |
+| `POST` | `/Rekrutmen/TambahLowongan` | `SuperAdmin`, `HRD` | Menyimpan lowongan baru dengan validasi kode lowongan unik |
+| `GET` | `/Rekrutmen/UbahLowongan/{id}` | `SuperAdmin`, `HRD` | Form ubah data dan kuota lowongan kerja |
+| `POST` | `/Rekrutmen/UbahLowongan/{id}` | `SuperAdmin`, `HRD` | Menyimpan perubahan lowongan kerja |
+| `GET` | `/Rekrutmen/DetailLowongan/{id}` | `SuperAdmin`, `HRD`, `Manager` | Halaman tab lowongan: Deskripsi & Kualifikasi, Daftar Pelamar, Pipeline Tahapan Seleksi |
+| `POST` | `/Rekrutmen/HapusLowongan/{id}` | `SuperAdmin`, `HRD` | Soft delete lowongan kerja |
+| `GET` | `/Rekrutmen/Pelamar` | `SuperAdmin`, `HRD`, `Manager` | Daftar seluruh kandidat pelamar dengan filter posisi lowongan & status |
+| `GET` | `/Rekrutmen/DaftarPelamar` | `SuperAdmin`, `HRD` | Form pendaftaran kandidat pelamar kerja dengan upload berkas CV (PDF/DOCX max 5MB) |
+| `POST` | `/Rekrutmen/DaftarPelamar` | `SuperAdmin`, `HRD` | Memproses registrasi pelamar dan menyimpan berkas CV terisolasi tenant |
+| `GET` | `/Rekrutmen/DetailPelamar/{id}` | `SuperAdmin`, `HRD`, `Manager` | Profil lengkap pelamar, berkas CV, riwayat interview, evaluasi skor, dan aksi pipeline |
+| `POST` | `/Rekrutmen/SeleksiAdministrasi` | `SuperAdmin`, `HRD` | Putusan kelayakan berkas CV (Lolos / Gugur Berkas) |
+| `GET` | `/Rekrutmen/UnduhCV/{id}` | `SuperAdmin`, `HRD`, `Manager` | Mengunduh file CV kandidat dengan otorisasi tenant terverifikasi |
+| `POST` | `/Rekrutmen/SimpanJadwalWawancara` | `SuperAdmin`, `HRD`, `Manager` | Menjadwalkan undangan interview (tatap muka atau online link Meet/Zoom) |
+| `POST` | `/Rekrutmen/SimpanHasilWawancara` | `SuperAdmin`, `HRD`, `Manager` | Mencatat skor evaluasi penilaian kandidat (0 - 100), kelebihan, kekurangan, dan keputusan |
+| `POST` | `/Rekrutmen/UbahStatusPelamar` | `SuperAdmin`, `HRD` | Memperbarui status alur pipeline kandidat secara manual |
+| `POST` | `/Rekrutmen/TerimaKandidat` | `SuperAdmin`, `HRD` | Menerima kandidat dan melakukan konversi atomik menjadi entitas Karyawan aktif |
+
+---
+
+### 2.11 Modul Penilaian Kinerja / KPI (`KinerjaController`)
+| HTTP Method | Route URL | Hak Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/Kinerja` | `SuperAdmin`, `HRD`, `Manager` *(Karyawan -> redirect RiwayatSaya)* | Dashboard analitik KPI: ringkasan metrik, grafik Chart.js distribusi predikat A-E, skor per departemen |
+| `GET` | `/Kinerja/Periode` | `SuperAdmin`, `HRD`, `Manager` | Daftar siklus periode penilaian performa (Semester, Tahunan, Kuartalan) |
+| `GET` | `/Kinerja/TambahPeriode` | `SuperAdmin`, `HRD` | Form pembuatan siklus periode penilaian baru |
+| `POST` | `/Kinerja/TambahPeriode` | `SuperAdmin`, `HRD` | Menyimpan siklus periode penilaian kinerja |
+| `GET` | `/Kinerja/UbahPeriode/{id}` | `SuperAdmin`, `HRD` | Form ubah data periode penilaian |
+| `POST` | `/Kinerja/UbahPeriode/{id}` | `SuperAdmin`, `HRD` | Menyimpan pembaruan periode penilaian |
+| `POST` | `/Kinerja/HapusPeriode/{id}` | `SuperAdmin`, `HRD` | Hapus periode penilaian jika belum memiliki lembar evaluasi |
+| `GET` | `/Kinerja/Indikator` | `SuperAdmin`, `HRD`, `Manager` | Master indikator KPI: tolak ukur, target, satuan, bobot bawaan, filter departemen |
+| `GET` | `/Kinerja/TambahIndikator` | `SuperAdmin`, `HRD` | Form pembuatan indikator KPI baru |
+| `POST` | `/Kinerja/TambahIndikator` | `SuperAdmin`, `HRD` | Menyimpan indikator KPI baru |
+| `GET` | `/Kinerja/UbahIndikator/{id}` | `SuperAdmin`, `HRD` | Form ubah data indikator KPI |
+| `POST` | `/Kinerja/UbahIndikator/{id}` | `SuperAdmin`, `HRD` | Menyimpan perubahan indikator KPI |
+| `POST` | `/Kinerja/HapusIndikator/{id}` | `SuperAdmin`, `HRD` | Hapus indikator KPI jika belum pernah digunakan pada lembar penilaian |
+| `GET` | `/Kinerja/Penilaian` | `SuperAdmin`, `HRD`, `Manager` | Daftar arsip seluruh lembar penilaian performa karyawan dengan filter periode & karyawan |
+| `GET` | `/Kinerja/InputPenilaian` | `SuperAdmin`, `HRD`, `Manager` | Form penilaian kinerja interaktif: evaluasi skor objektif per butir KPI, kalkulasi skor live, ulasan & rekomendasi |
+| `POST` | `/Kinerja/InputPenilaian` | `SuperAdmin`, `HRD`, `Manager` | Menyimpan penilaian kinerja, auto-kalkulasi skor tertimbang $\sum (Bobot \times Skor)$ dan penentuan predikat resmi |
+| `GET` | `/Kinerja/DetailPenilaian/{id}` | Terautentikasi (HRD, Manager, Karyawan Bersangkutan) | Lembar resmi evaluasi kinerja karyawan, rincian skor indikator, tanda tangan evaluator, siap print/PDF |
+| `GET` | `/Kinerja/Laporan` | `SuperAdmin`, `HRD`, `Manager` | Laporan analitik performa kerja karyawan dengan filter departemen, karyawan, dan tahun |
+| `GET` | `/Kinerja/RiwayatSaya` | Terautentikasi (ESS Karyawan) | Portal riwayat evaluasi performa mandiri karyawan |

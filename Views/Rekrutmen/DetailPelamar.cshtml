@@ -5,13 +5,13 @@
 
     string badgeStatusClass = Model.Status switch
     {
-        StatusPelamar.Terdaftar => "bg-secondary text-white",
+        StatusPelamar.Baru => "bg-secondary text-white",
         StatusPelamar.SeleksiAdministrasi => "bg-info text-dark",
         StatusPelamar.LolosAdministrasi => "bg-primary text-white",
         StatusPelamar.Wawancara => "bg-warning text-dark",
+        StatusPelamar.PenawaranKerja => "bg-info text-white",
         StatusPelamar.Diterima => "bg-success text-white",
         StatusPelamar.Ditolak => "bg-danger text-white",
-        StatusPelamar.Cadangan => "bg-secondary text-white",
         _ => "bg-light text-dark"
     };
 }
@@ -311,8 +311,8 @@
                                         string keputusanBadge = h.Keputusan switch
                                         {
                                             HasilKeputusanSeleksi.Lolos => "bg-success text-white",
-                                            HasilKeputusanSeleksi.Cadangan => "bg-warning text-dark",
-                                            HasilKeputusanSeleksi.Tolak => "bg-danger text-white",
+                                            HasilKeputusanSeleksi.Dipertimbangkan => "bg-warning text-dark",
+                                            HasilKeputusanSeleksi.TidakLolos => "bg-danger text-white",
                                             _ => "bg-secondary text-white"
                                         };
 
@@ -467,7 +467,6 @@
                         <select name="Metode" class="form-select rounded-3">
                             <option value="@MetodeWawancara.Daring">Daring (Google Meet / Zoom)</option>
                             <option value="@MetodeWawancara.TatapMuka">Tatap Muka (Offline Office)</option>
-                            <option value="@MetodeWawancara.Telepon">Panggilan Telepon</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -521,8 +520,8 @@
                             <label class="form-label fw-semibold">Keputusan</label>
                             <select name="Keputusan" class="form-select rounded-3">
                                 <option value="@HasilKeputusanSeleksi.Lolos">Lolos ke Tahap Lanjut</option>
-                                <option value="@HasilKeputusanSeleksi.Cadangan">Cadangan / Pertimbangan</option>
-                                <option value="@HasilKeputusanSeleksi.Tolak">Tidak Lolos</option>
+                                <option value="@HasilKeputusanSeleksi.Dipertimbangkan">Dipertimbangkan (Cadangan)</option>
+                                <option value="@HasilKeputusanSeleksi.TidakLolos">Tidak Lolos</option>
                             </select>
                         </div>
                     </div>

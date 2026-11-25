@@ -254,9 +254,83 @@ Dokumen ini mencatat log kronologis tahapan implementasi, perubahan arsitektur, 
 
 ---
 
-## [Fase 5] — Modul Rekrutmen (Recruitment)
+## [Fase 5] — Modul Rekrutmen & Penilaian Kinerja (SELESAI)
+**Tanggal**: 26 November 2026
+
+### Rincian Implementasi:
+1. **Model Database & Entitas (`Models/Entitas/`)**:
+   * Modul Rekrutmen:
+     - `LowonganKerja`: Posisi lowongan pekerjaan terbuka, kode lowongan unik, departemen, jabatan, kuota rekrutmen, rentang estimasi gaji, kualifikasi, deskripsi kerja, lokasi kerja, tanggal buka/tutup, status (`Draf`, `Dibuka`, `Ditutup`, `Dibatalkan`).
+     - `TahapanSeleksi`: Rangkaian alur seleksi hiring per lowongan kerja (`Administrasi`, `TesTertulis`, `WawancaraHR`, `WawancaraUser`, `TesTeknis`, `MedicalCheckUp`, `Offering`), urutan tahapan, status aktif.
+     - `Pelamar`: Profil kandidat, nomor registrasi unik (`REG-YYYYMM-XXXX`), lowongan dituju, data kontak, pendidikan, institusi, jurusan, tahun pengalaman, ekspektasi gaji, berkas CV (PDF/DOCX max 5MB tersimpan aman di `uploads/cv/{CompanyId}`), status kandidat (`Baru`, `SeleksiAdministrasi`, `LolosAdministrasi`, `Wawancara`, `PenawaranKerja`, `Diterima`, `Ditolak`).
+     - `JadwalWawancara`: Undangan wawancara terstruktur, pewawancara, tanggal, jam mulai/selesai, metode (`TatapMuka`, `Daring`), lokasi atau link Google Meet/Zoom, catatan undangan, status jadwal (`Dijadwalkan`, `Selesai`, `Dibatalkan`, `Reschedule`).
+     - `HasilSeleksi`: Catatan ulasan penilai, skor evaluasi seleksi (0 - 100), kelebihan, kekurangan, dan keputusan (`Lolos`, `Dipertimbangkan`, `TidakLolos`).
+   * Modul Penilaian Kinerja (KPI):
+     - `PeriodePenilaian`: Siklus evaluasi performa berkala per tenant (`Semester 1`, `Semester 2`, `Tahunan`, `Kuartalan`), rentang tanggal mulai & selesai, status periode (`Draf`, `Aktif`, `PenilaianSelesai`, `Ditutup`), instruksi/catatan.
+     - `IndikatorKPI`: Master tolok ukur evaluasi kinerja objektif per departemen/jabatan atau umum, kode indikator, jenis (`Kuantitatif`, `Kualitatif`, `Perilaku`, `Proyek`), target capaian, satuan, bobot default (%), deskripsi panduan evaluasi.
+     - `PenilaianKinerja`: Lembar evaluasi resmi performa karyawan per periode, NIK, penilai, tanggal evaluasi, total skor akhir tertimbang (0.00 - 100.00), predikat kinerja (`Istimewa` [A: $\ge 90$], `Baik` [B: $\ge 80$], `Cukup` [C: $\ge 70$], `Kurang` [D: $\ge 60$], `SangatKurang` [E: $< 60$]), ulasan evaluasi, rekomendasi pengembangan, status (`Draf`, `MenungguPersetujuan`, `Disetujui`).
+     - `DetailPenilaian`: Rincian penilaian butir indikator KPI (target, realisasi, bobot %, skor indikator, skor tertimbang, catatan capaian).
+   * Migrasi EF Core: `TambahModulRekrutmenDanPenilaianKinerja` diterapkan bersih ke database MySQL/MariaDB `sistemhrd_db` (9 tabel baru, foreign keys terisolasi per `PerusahaanId`, unique indexes).
+
+2. **Service Layer & Logika Bisnis Terisolasi**:
+   * `ILayananRekrutmen` & `LayananRekrutmen`:
+     - CRUD lowongan kerja, pengelolaan tahapan pipeline seleksi, registrasi pelamar dengan validasi format & ukuran file CV, download berkas CV aman berbasis otorisasi tenant, alur seleksi administrasi, penjadwalan interview, perekaman skor wawancara, dan konversi atomik kandidat diterima menjadi entitas `Karyawan` dalam transaksi database (`BeginTransactionAsync`).
+   * `ILayananPenilaianKinerja` & `LayananPenilaianKinerja`:
+     - Pengaturan periode penilaian dan master indikator KPI.
+     - **Mesin Perhitungan Skor Tertimbang Objektif**:
+       $$\text{SkorTertimbang}_i = \frac{\text{BobotPersen}_i}{\text{TotalBobot}} \times \text{SkorIndikator}_i$$
+       $$\text{TotalSkorAkhir} = \sum \text{SkorTertimbang}_i$$
+     - Penegakan aturan: *"Jangan membuat skor kinerja yang tidak memiliki dasar indikator penilaian"* (pemberian nilai wajib menyertakan rincian indikator KPI aktif).
+     - Otomasi penentuan predikat kinerja resmi (Istimewa/Baik/Cukup/Kurang/Sangat Kurang).
+     - Dashboard analitik KPI terintegrasi dengan ringkasan metrik perusahaan.
+
+3. **Controllers & Razor Views**:
+   * `RekrutmenController`: Dashboard rekrutmen dengan Chart.js (Doughnut status pelamar & Bar kandidat per lowongan), daftar lowongan, form tambah/ubah lowongan, detail lowongan (tab deskripsi, pelamar, pipeline), daftar pelamar, registrasi pelamar + upload CV multipart, detail pelamar, modal seleksi berkas, modal jadwal wawancara, modal evaluasi seleksi, modal penerimaan & hiring karyawan, unduh CV.
+   * `KinerjaController`: Dashboard kinerja dengan Chart.js (Doughnut distribusi predikat A-E & Bar rata-rata skor per departemen), kelola periode, form tambah/ubah periode, master indikator KPI, form input penilaian interaktif dengan kalkulasi skor live di sisi browser dan server, lembar hasil evaluasi resmi siap cetak (`@media print`), laporan analitik performa kerja, serta portal ESS `RiwayatSaya`.
+   * Integrasi navigasi sidebar: Menu `Rekrutmen & Pelamar` dan `Penilaian Kinerja` untuk HRD/Manager, serta menu `Evaluasi Kinerja Saya` pada Employee Self Service.
+
+4. **Unit Tests (`SistemHRD.Tests`)**:
+   * Penambahan 14 test case baru di `UjiPenilaianKinerja.cs` melengkapi total 23 unit tests xUnit:
+     - Skor seluruh indikator maksimal menghasilkan Predikat Istimewa (100.00 -> Istimewa).
+     - Kalkulasi skor tertimbang dengan bobot beragam akurat secara matematis.
+     - Normalisasi proporsional otomatis saat total bobot input tidak tepat 100%.
+     - Penolakan & pelemparan exception jika evaluasi diajukan tanpa adanya butir indikator KPI.
+     - Pengujian nilai ambang batas predikat (boundary tests): 95, 90, 89.9, 80, 79.9, 70, 69.9, 60, 59.9, 40.
+   * Hasil: **Passed: 23, Failed: 0, Skipped: 0 (100% Lulus)**.
+
+5. **Pengujian Integrasi End-to-End (`test_phase5.ps1`)**:
+   * 24 Skenario Pengujian Otomatis:
+     1. Login HRD Tenant 1 (PT Solusi HR Nusantara). *(LULUS)*
+     2. Login Manager Tenant 1. *(LULUS)*
+     3. Login Karyawan Tenant 1. *(LULUS)*
+     4. Login HRD Tenant 2 (PT Maju Bersama Digital). *(LULUS)*
+     5. Akses Dashboard Rekrutmen (Statistik & Chart.js). *(LULUS)*
+     6. Akses Daftar Lowongan Kerja. *(LULUS)*
+     7. Tambah Lowongan Kerja Baru Berhasil. *(LULUS)*
+     8. Pendaftaran Pelamar + Upload Berkas CV Berhasil. *(LULUS)*
+     9. Seleksi Administrasi (Loloskan Berkas). *(LULUS)*
+     10. Unduh Berkas CV Berhasil Sesuai Hak Akses Tenant. *(LULUS)*
+     11. Jadwalkan Wawancara Kandidat. *(LULUS)*
+     12. Catat Evaluasi & Skor Seleksi Objektif (89.5). *(LULUS)*
+     13. Penerimaan Kandidat & Konversi Atomik ke Karyawan. *(LULUS)*
+     14. Akses Dashboard Penilaian Kinerja (Chart.js KPI). *(LULUS)*
+     15. Tambah Periode Penilaian Kinerja Aktif. *(LULUS)*
+     16. Tambah Master Indikator KPI Berbobot. *(LULUS)*
+     17. Perhitungan Skor Tertimbang Objektif (94.0 -> Predikat Istimewa). *(LULUS)*
+     18. Akses Lembar Resmi Penilaian Kinerja (Print Ready). *(LULUS)*
+     19. Akses Laporan & Analitik Performa Karyawan. *(LULUS)*
+     20. ESS Karyawan Mengakses Riwayat Evaluasi Diri Sendiri. *(LULUS)*
+     21. ESS Karyawan Diblokir Mengakses Evaluasi Rekan Kerja Lain. *(LULUS)*
+     22. Multi-Tenant: Tenant 2 Dilarang Mengakses Lowongan Tenant 1. *(LULUS)*
+     23. Multi-Tenant: Tenant 2 Dilarang Mengakses Pelamar Tenant 1. *(LULUS)*
+     24. Multi-Tenant: Tenant 2 Dilarang Mengakses Lembar Penilaian Tenant 1. *(LULUS)*
+   * Hasil: **Passed: 24, Failed: 0 (100% Lulus)**.
+
+---
+
+## [Fase 6] — Modul Pelatihan, Sertifikasi & Offboarding
 **Status**: ⏳ Siap Dikerjakan
-* Lowongan Pekerjaan (Job Postings)
-* Pelamar & Pengunggahan CV / Dokumen
-* Tahapan Seleksi & Wawancara
-* Onboarding & Konversi Pelamar ke Karyawan
+* Modul Pelatihan & Sertifikasi Karyawan (Training & Development)
+* Modul Offboarding & Resign / Terminasi Karyawan
+* Surat Keterangan Kerja (Paklaring)
+* Serah Terima Aset & Inventaris Perusahaan

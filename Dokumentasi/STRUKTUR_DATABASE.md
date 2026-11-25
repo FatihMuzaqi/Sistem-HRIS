@@ -439,6 +439,196 @@ Setiap entitas bisnis mewarisi kolom-kolom standar berikut:
 
 ---
 
+### 3.5 Tabel Modul Rekrutmen (Fase 5 - Terimplementasi)
+
+```
+┌────────────────────────────────────────────────────────┐
+│                      Perusahaan                        │
+└───────┬────────────────────────┬───────────────────────┘
+        │ 1:N                    │ 1:N
+        ▼                        ▼
+┌──────────────────┐     ┌──────────────────┐
+│  LowonganKerja   │◄────┤     Pelamar      │
+└───────┬──────────┘     └───────┬──────────┘
+        │ 1:N                    │ 1:N
+        ▼                        ├───────────────────────┐
+┌──────────────────┐             ▼                       ▼
+│  TahapanSeleksi  │    ┌──────────────────┐    ┌──────────────────┐
+└──────────────────┘    │ JadwalWawancara  │    │   HasilSeleksi   │
+                        └──────────────────┘    └──────────────────┘
+```
+
+1. **`LowonganKerja`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `DepartemenId` (GUID, FK `Departemen`, `OnDelete: SetNull`)
+   * `JabatanId` (GUID, FK `Jabatan`, `OnDelete: SetNull`)
+   * `KodeLowongan` (VARCHAR(50), NOT NULL)
+   * `JudulLowongan` (VARCHAR(150), NOT NULL)
+   * `DeskripsiPekerjaan` (TEXT, NOT NULL)
+   * `Kualifikasi` (TEXT, NOT NULL)
+   * `TipePekerjaan` (INT: 1=PenuhWaktu, 2=ParuhWaktu, 3=Kontrak, 4=Magang, 5=Remote)
+   * `LokasiKerja` (VARCHAR(100), NOT NULL)
+   * `JumlahDibutuhkan` (INT, Default 1)
+   * `GajiMin` (DECIMAL(18,2), NULL)
+   * `GajiMax` (DECIMAL(18,2), NULL)
+   * `TanggalDibuka` (DATE, NOT NULL)
+   * `TanggalDitutup` (DATE, NULL)
+   * `Status` (INT: 1=Draf, 2=Dibuka, 3=Ditutup, 4=Dibatalkan)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KodeLowongan)`
+
+2. **`TahapanSeleksi`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `LowonganKerjaId` (GUID, FK `LowonganKerja`, `OnDelete: Cascade`)
+   * `NamaTahapan` (VARCHAR(100), NOT NULL)
+   * `JenisTahapan` (INT: 1=Administrasi, 2=TesTertulis, 3=WawancaraHR, 4=WawancaraUser, 5=TesTeknis, 6=MCU, 7=Offering)
+   * `Urutan` (INT, Default 1)
+   * `Keterangan` (VARCHAR(255), NULL)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * Kolom Audit & Soft Delete
+
+3. **`Pelamar`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `LowonganKerjaId` (GUID, FK `LowonganKerja`, `OnDelete: Restrict`)
+   * `NomorRegistrasi` (VARCHAR(50), NOT NULL)
+   * `NamaLengkap` (VARCHAR(150), NOT NULL)
+   * `Email` (VARCHAR(100), NOT NULL)
+   * `NomorTelepon` (VARCHAR(30), NOT NULL)
+   * `PendidikanTerakhir` (VARCHAR(50), NULL)
+   * `NamaInstitusi` (VARCHAR(150), NULL)
+   * `Jurusan` (VARCHAR(100), NULL)
+   * `PengalamanKerjaTahun` (DECIMAL(4,1), Default 0)
+   * `GajiDiharapkan` (DECIMAL(18,2), NULL)
+   * `NamaFileCV` (VARCHAR(255), NOT NULL)
+   * `JalurFileCV` (VARCHAR(500), NOT NULL)
+   * `CatatanAdministrasi` (VARCHAR(500), NULL)
+   * `Status` (INT: 1=Baru, 2=SeleksiAdministrasi, 3=LolosAdministrasi, 4=Wawancara, 5=PenawaranKerja, 6=Diterima, 7=Ditolak)
+   * `KaryawanId` (GUID, FK `Karyawan`, NULL, `OnDelete: SetNull`)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, NomorRegistrasi)`
+   * Index: `(PerusahaanId, LowonganKerjaId, Status)`
+
+4. **`JadwalWawancara`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PelamarId` (GUID, FK `Pelamar`, `OnDelete: Cascade`)
+   * `TahapanSeleksiId` (GUID, FK `TahapanSeleksi`, NULL, `OnDelete: SetNull`)
+   * `PewawancaraId` (GUID, FK `Pengguna`, NULL, `OnDelete: SetNull`)
+   * `NamaPewawancara` (VARCHAR(150), NOT NULL)
+   * `TanggalWawancara` (DATE, NOT NULL)
+   * `JamMulai` (TIME, NOT NULL)
+   * `JamSelesai` (TIME, NOT NULL)
+   * `Metode` (INT: 1=TatapMuka, 2=Daring)
+   * `LokasiAtauTautan` (VARCHAR(255), NOT NULL)
+   * `Status` (INT: 1=Dijadwalkan, 2=Selesai, 3=Dibatalkan, 4=Reschedule)
+   * `CatatanUndangan` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+
+5. **`HasilSeleksi`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PelamarId` (GUID, FK `Pelamar`, `OnDelete: Cascade`)
+   * `TahapanSeleksiId` (GUID, FK `TahapanSeleksi`, NULL, `OnDelete: SetNull`)
+   * `JadwalWawancaraId` (GUID, FK `JadwalWawancara`, NULL, `OnDelete: SetNull`)
+   * `PenilaiId` (GUID, FK `Pengguna`, NOT NULL)
+   * `NamaPenilai` (VARCHAR(150), NOT NULL)
+   * `TanggalPenilaian` (DATE, NOT NULL)
+   * `Skor` (DECIMAL(5,2), NOT NULL)
+   * `CatatanEvaluasi` (TEXT, NOT NULL)
+   * `Kelebihan` (VARCHAR(500), NULL)
+   * `Kekurangan` (VARCHAR(500), NULL)
+   * `Keputusan` (INT: 1=Lolos, 2=Dipertimbangkan, 3=TidakLolos)
+   * Kolom Audit & Soft Delete
+
+---
+
+### 3.6 Tabel Modul Penilaian Kinerja (Fase 5 - Terimplementasi)
+
+```
+┌────────────────────────────────────────────────────────┐
+│                      Perusahaan                        │
+└───────┬────────────────────────┬───────────────────────┘
+        │ 1:N                    │ 1:N
+        ▼                        ▼
+┌──────────────────┐     ┌──────────────────┐
+│ PeriodePenilaian │     │   IndikatorKPI   │
+└───────┬──────────┘     └───────┬──────────┘
+        │ 1:N                    │
+        ▼                        │
+┌──────────────────┐             │
+│ PenilaianKinerja │◄────────────┘
+└───────┬──────────┘ 1:N
+        ▼
+┌──────────────────┐
+│ DetailPenilaian  │
+└──────────────────┘
+```
+
+1. **`PeriodePenilaian`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `NamaPeriode` (VARCHAR(100), NOT NULL)
+   * `Tahun` (INT, NOT NULL)
+   * `SemesterAtauKuartal` (VARCHAR(50), NULL)
+   * `TanggalMulai` (DATE, NOT NULL)
+   * `TanggalSelesai` (DATE, NOT NULL)
+   * `Status` (INT: 1=Draf, 2=Aktif, 3=PenilaianSelesai, 4=Ditutup)
+   * `Catatan` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, Tahun, SemesterAtauKuartal)`
+
+2. **`IndikatorKPI`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `DepartemenId` (GUID, FK `Departemen`, NULL, `OnDelete: SetNull`)
+   * `JabatanId` (GUID, FK `Jabatan`, NULL, `OnDelete: SetNull`)
+   * `KodeIndikator` (VARCHAR(50), NOT NULL)
+   * `NamaIndikator` (VARCHAR(150), NOT NULL)
+   * `Deskripsi` (VARCHAR(500), NULL)
+   * `Jenis` (INT: 1=Kuantitatif, 2=Kualitatif, 3=Perilaku, 4=Proyek)
+   * `TargetKuantitatif` (DECIMAL(12,2), NULL)
+   * `Satuan` (VARCHAR(50), NULL)
+   * `BobotBawaan` (DECIMAL(5,2), Default 20.00)
+   * `StatusAktif` (BOOLEAN, Default TRUE)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PerusahaanId, KodeIndikator)`
+
+3. **`PenilaianKinerja`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PeriodePenilaianId` (GUID, FK `PeriodePenilaian`, `OnDelete: Restrict`)
+   * `KaryawanId` (GUID, FK `Karyawan`, `OnDelete: Restrict`)
+   * `PenilaiId` (GUID, FK `Pengguna`, NOT NULL)
+   * `NamaPenilai` (VARCHAR(150), NOT NULL)
+   * `TanggalPenilaian` (DATE, NOT NULL)
+   * `TotalSkorAkhir` (DECIMAL(5,2), NOT NULL)
+   * `PredikatKinerja` (INT: 1=SangatKurang, 2=Kurang, 3=Cukup, 4=Baik, 5=Istimewa)
+   * `KomentarEvaluasi` (TEXT, NOT NULL)
+   * `RekomendasiPengembangan` (VARCHAR(500), NULL)
+   * `Status` (INT: 1=Draf, 2=MenungguPersetujuan, 3=Disetujui)
+   * Kolom Audit & Soft Delete
+   * Unique Index: `(PeriodePenilaianId, KaryawanId)`
+   * Index: `(PerusahaanId, KaryawanId)`
+
+4. **`DetailPenilaian`**:
+   * `Id` (GUID, PK)
+   * `PerusahaanId` (GUID, FK `Perusahaan`)
+   * `PenilaianKinerjaId` (GUID, FK `PenilaianKinerja`, `OnDelete: Cascade`)
+   * `IndikatorKPIId` (GUID, FK `IndikatorKPI`, `OnDelete: Restrict`)
+   * `Target` (VARCHAR(100), NULL)
+   * `Realisasi` (VARCHAR(100), NULL)
+   * `BobotPersen` (DECIMAL(5,2), NOT NULL)
+   * `SkorIndikator` (DECIMAL(5,2), NOT NULL)
+   * `SkorTertimbang` (DECIMAL(5,2), NOT NULL)
+   * `CatatanIndikator` (VARCHAR(500), NULL)
+   * Kolom Audit & Soft Delete
+   * Index: `(PenilaianKinerjaId)`
+
+---
+
 ## 4. Integritas Relasi & Constraint
 * **Foreign Key**: Menjaga integritas referensial data.
 * **Cascade Delete Rules**: Restrict / No Action pada entitas data master utama guna mencegah penghapusan data transaksi historis saat master dihapus.

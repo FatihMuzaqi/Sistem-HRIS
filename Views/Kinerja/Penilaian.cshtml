@@ -105,7 +105,7 @@
                             {
                                 string predikatBadge = item.PredikatKinerja switch
                                 {
-                                    KategoriKinerja.SangatBaik => "bg-success text-white",
+                                    KategoriKinerja.Istimewa => "bg-success text-white",
                                     KategoriKinerja.Baik => "bg-primary text-white",
                                     KategoriKinerja.Cukup => "bg-info text-dark",
                                     KategoriKinerja.Kurang => "bg-warning text-dark",
@@ -116,8 +116,8 @@
                                 string statusBadge = item.Status switch
                                 {
                                     StatusPenilaianKinerja.Disetujui => "bg-success-subtle text-success-emphasis",
+                                    StatusPenilaianKinerja.MenungguPersetujuan => "bg-info-subtle text-info-emphasis",
                                     StatusPenilaianKinerja.Draf => "bg-warning-subtle text-warning-emphasis",
-                                    StatusPenilaianKinerja.Ditolak => "bg-danger-subtle text-danger-emphasis",
                                     _ => "bg-light text-muted"
                                 };
 

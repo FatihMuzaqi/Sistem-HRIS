@@ -84,9 +84,9 @@
                                 string statusBadge = p.Status switch
                                 {
                                     StatusPeriodePenilaian.Aktif => "bg-success text-white",
-                                    StatusPeriodePenilaian.Selesai => "bg-secondary text-white",
+                                    StatusPeriodePenilaian.PenilaianSelesai => "bg-secondary text-white",
                                     StatusPeriodePenilaian.Draf => "bg-warning text-dark",
-                                    StatusPeriodePenilaian.Dibatalkan => "bg-danger text-white",
+                                    StatusPeriodePenilaian.Ditutup => "bg-danger text-white",
                                     _ => "bg-light text-dark"
                                 };
 
