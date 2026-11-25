@@ -1,0 +1,150 @@
+@model SistemHRD.ViewModels.FormPelamarViewModel
+@{
+    ViewData["Title"] = "Tambah Pelamar Baru";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-action="Pelamar" class="btn btn-outline-secondary rounded-3 px-3">
+                        <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                    </a>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">Tambah Data Pelamar</h4>
+                        <p class="text-muted small mb-0">Registrasi kandidat pelamar kerja dan unggah berkas CV/Resume</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-body p-4 p-lg-5">
+            <form asp-action="DaftarPelamar" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                            <span class="fw-semibold">Terdapat kesalahan pengisian formulir:</span>
+                        </div>
+                        <div asp-validation-summary="All" class="small text-danger mb-0"></div>
+                    </div>
+                }
+
+                <div class="row g-4">
+                    <!-- Lowongan Pilihan -->
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <label asp-for="LowonganKerjaId" class="form-label fw-bold">Posisi Lowongan Kerja Dituju <span class="text-danger">*</span></label>
+                            <select asp-for="LowonganKerjaId" asp-items="ViewBag.DaftarLowongan" class="form-select form-select-lg rounded-3">
+                                <option value="">-- Pilih Lowongan Kerja Aktif --</option>
+                            </select>
+                            <span asp-validation-for="LowonganKerjaId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Data Pribadi -->
+                    <div class="col-12">
+                        <h6 class="fw-bold text-dark border-bottom pb-2">Informasi Pribadi & Kontak</h6>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NamaLengkap" class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input asp-for="NamaLengkap" class="form-control rounded-3" placeholder="Contoh: Budi Santoso" />
+                        <span asp-validation-for="NamaLengkap" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold">Alamat Email <span class="text-danger">*</span></label>
+                        <input asp-for="Email" type="email" class="form-control rounded-3" placeholder="budi@example.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NomorTelepon" class="form-label fw-semibold">Nomor WhatsApp / HP <span class="text-danger">*</span></label>
+                        <input asp-for="NomorTelepon" class="form-control rounded-3" placeholder="081234567890" />
+                        <span asp-validation-for="NomorTelepon" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="GajiDiharapkan" class="form-label fw-semibold">Ekspektasi Gaji (Rp/bulan)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">Rp</span>
+                            <input asp-for="GajiDiharapkan" type="number" step="100000" class="form-control rounded-end-3" placeholder="Contoh: 10000000" />
+                        </div>
+                        <span asp-validation-for="GajiDiharapkan" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Pendidikan & Pengalaman -->
+                    <div class="col-12 pt-3">
+                        <h6 class="fw-bold text-dark border-bottom pb-2">Riwayat Pendidikan & Pengalaman</h6>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="PendidikanTerakhir" class="form-label fw-semibold">Pendidikan Terakhir</label>
+                        <select asp-for="PendidikanTerakhir" class="form-select rounded-3">
+                            <option value="">-- Pilih Jenjang --</option>
+                            <option value="SMA/SMK">SMA / SMK Sederajat</option>
+                            <option value="D3">Diploma (D3)</option>
+                            <option value="D4/S1">Sarjana (S1 / D4)</option>
+                            <option value="S2">Magister (S2)</option>
+                            <option value="S3">Doktor (S3)</option>
+                        </select>
+                        <span asp-validation-for="PendidikanTerakhir" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="NamaInstitusi" class="form-label fw-semibold">Nama Universitas / Sekolah</label>
+                        <input asp-for="NamaInstitusi" class="form-control rounded-3" placeholder="Contoh: Universitas Indonesia" />
+                        <span asp-validation-for="NamaInstitusi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Jurusan" class="form-label fw-semibold">Jurusan / Program Studi</label>
+                        <input asp-for="Jurusan" class="form-control rounded-3" placeholder="Contoh: Teknik Informatika" />
+                        <span asp-validation-for="Jurusan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="PengalamanKerjaTahun" class="form-label fw-semibold">Total Pengalaman Kerja (Tahun)</label>
+                        <input asp-for="PengalamanKerjaTahun" type="number" step="0.5" class="form-control rounded-3" />
+                        <span asp-validation-for="PengalamanKerjaTahun" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="BerkasCV" class="form-label fw-semibold">Unggah Berkas CV/Resume (PDF/DOCX max 5MB) <span class="text-danger">*</span></label>
+                        <input asp-for="BerkasCV" type="file" accept=".pdf,.doc,.docx" class="form-control rounded-3" />
+                        <span asp-validation-for="BerkasCV" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="CatatanAdministrasi" class="form-label fw-semibold">Catatan / Ringkasan Awal Pelamar</label>
+                        <textarea asp-for="CatatanAdministrasi" rows="3" class="form-control rounded-3" placeholder="Catatan keahlian khusus, portofolio link (GitHub/LinkedIn), atau referensi..."></textarea>
+                        <span asp-validation-for="CatatanAdministrasi" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                    <a asp-action="Pelamar" class="btn btn-outline-secondary rounded-3 px-4">Batal</a>
+                    <button type="submit" class="btn text-white px-4 rounded-3" style="background-color: #059669;">
+                        <i data-lucide="user-check" class="lucide me-1"></i> Daftarkan Pelamar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        lucide.createIcons();
+    </script>
+}
