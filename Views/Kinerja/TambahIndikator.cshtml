@@ -1,0 +1,126 @@
+@model SistemHRD.ViewModels.FormIndikatorKPIViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = "Tambah Indikator KPI";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+                <a asp-action="Indikator" class="btn btn-outline-secondary rounded-3 px-3">
+                    <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Tambah Indikator KPI Baru</h4>
+                    <p class="text-muted small mb-0">Definisikan tolak ukur, target capaian, dan bobot penilaian kinerja</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-body p-4 p-lg-5">
+            <form asp-action="TambahIndikator" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                            <span class="fw-semibold">Terdapat kesalahan pengisian formulir:</span>
+                        </div>
+                        <div asp-validation-summary="All" class="small text-danger mb-0"></div>
+                    </div>
+                }
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label asp-for="KodeIndikator" class="form-label fw-semibold">Kode Indikator <span class="text-danger">*</span></label>
+                        <input asp-for="KodeIndikator" class="form-control rounded-3 font-monospace" placeholder="Contoh: KPI-PRD-01" />
+                        <span asp-validation-for="KodeIndikator" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="NamaIndikator" class="form-label fw-semibold">Nama Indikator KPI <span class="text-danger">*</span></label>
+                        <input asp-for="NamaIndikator" class="form-control rounded-3" placeholder="Contoh: Ketepatan Waktu Delivery Task Sprint" />
+                        <span asp-validation-for="NamaIndikator" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DepartemenId" class="form-label fw-semibold">Departemen Spesifik (Opsional)</label>
+                        <select asp-for="DepartemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select rounded-3">
+                            <option value="">-- Berlaku untuk Semua Departemen (Umum) --</option>
+                        </select>
+                        <small class="text-muted">Kosongkan jika indikator berlaku umum bagi seluruh karyawan.</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="JabatanId" class="form-label fw-semibold">Jabatan Spesifik (Opsional)</label>
+                        <select asp-for="JabatanId" asp-items="ViewBag.DaftarJabatan" class="form-select rounded-3">
+                            <option value="">-- Berlaku untuk Semua Jabatan --</option>
+                        </select>
+                        <small class="text-muted">Kosongkan jika indikator berlaku umum bagi seluruh jabatan.</small>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Jenis" class="form-label fw-semibold">Jenis Penilaian</label>
+                        <select asp-for="Jenis" asp-items="Html.GetEnumSelectList<JenisIndikatorKPI>()" class="form-select rounded-3"></select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TargetKuantitatif" class="form-label fw-semibold">Target Kuantitatif</label>
+                        <input asp-for="TargetKuantitatif" type="number" step="0.1" class="form-control rounded-3" placeholder="100" />
+                        <span asp-validation-for="TargetKuantitatif" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Satuan" class="form-label fw-semibold">Satuan Pengukuran</label>
+                        <input asp-for="Satuan" class="form-control rounded-3" placeholder="%, Tiket, Jam, Task" />
+                        <span asp-validation-for="Satuan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="BobotBawaan" class="form-label fw-semibold">Bobot Default (%) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input asp-for="BobotBawaan" type="number" step="1" min="1" max="100" class="form-control rounded-start-3" />
+                            <span class="input-group-text bg-light">%</span>
+                        </div>
+                        <span asp-validation-for="BobotBawaan" class="text-danger small"></span>
+                        <small class="text-muted">Proporsi bobot default indikator ini dalam total kalkulasi 100%.</small>
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center pt-3">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" asp-for="StatusAktif" id="StatusAktifSwitch">
+                            <label class="form-check-label fw-semibold" for="StatusAktifSwitch">Status Indikator Aktif</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Deskripsi" class="form-label fw-semibold">Deskripsi & Panduan Penilaian</label>
+                        <textarea asp-for="Deskripsi" rows="3" class="form-control rounded-3" placeholder="Jelaskan kriteria detail bagaimana indikator ini diukur dan dievaluasi oleh Manager..."></textarea>
+                        <span asp-validation-for="Deskripsi" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                    <a asp-action="Indikator" class="btn btn-outline-secondary rounded-3 px-4">Batal</a>
+                    <button type="submit" class="btn text-white px-4 rounded-3" style="background-color: #059669;">
+                        <i data-lucide="check" class="lucide me-1"></i> Simpan Indikator KPI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        lucide.createIcons();
+    </script>
+}

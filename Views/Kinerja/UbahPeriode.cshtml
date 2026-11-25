@@ -1,0 +1,109 @@
+@model SistemHRD.ViewModels.FormPeriodePenilaianViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = "Ubah Periode Penilaian";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+                <a asp-action="Periode" class="btn btn-outline-secondary rounded-3 px-3">
+                    <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Ubah Periode Penilaian</h4>
+                    <p class="text-muted small mb-0">Perbarui informasi siklus atau status periode penilaian</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white">
+        <div class="card-body p-4 p-lg-5">
+            <form asp-action="UbahPeriode" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                            <span class="fw-semibold">Terdapat kesalahan pengisian formulir:</span>
+                        </div>
+                        <div asp-validation-summary="All" class="small text-danger mb-0"></div>
+                    </div>
+                }
+
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <label asp-for="NamaPeriode" class="form-label fw-semibold">Nama Periode Penilaian <span class="text-danger">*</span></label>
+                        <input asp-for="NamaPeriode" class="form-control form-control-lg rounded-3" />
+                        <span asp-validation-for="NamaPeriode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label fw-semibold">Status Periode</label>
+                        <select asp-for="Status" asp-items="Html.GetEnumSelectList<StatusPeriodePenilaian>()" class="form-select form-select-lg rounded-3"></select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Tahun" class="form-label fw-semibold">Tahun Anggaran/Evaluasi <span class="text-danger">*</span></label>
+                        <input asp-for="Tahun" type="number" class="form-control rounded-3" />
+                        <span asp-validation-for="Tahun" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="SemesterAtauKuartal" class="form-label fw-semibold">Siklus / Termin</label>
+                        <select asp-for="SemesterAtauKuartal" class="form-select rounded-3">
+                            <option value="Semester 1">Semester 1</option>
+                            <option value="Semester 2">Semester 2</option>
+                            <option value="Tahunan">Tahunan Penuh</option>
+                            <option value="Kuartal 1 (Q1)">Kuartal 1 (Q1)</option>
+                            <option value="Kuartal 2 (Q2)">Kuartal 2 (Q2)</option>
+                            <option value="Kuartal 3 (Q3)">Kuartal 3 (Q3)</option>
+                            <option value="Kuartal 4 (Q4)">Kuartal 4 (Q4)</option>
+                        </select>
+                        <span asp-validation-for="SemesterAtauKuartal" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TanggalMulai" class="form-label fw-semibold">Tanggal Mulai Berlaku <span class="text-danger">*</span></label>
+                        <input asp-for="TanggalMulai" type="date" class="form-control rounded-3" />
+                        <span asp-validation-for="TanggalMulai" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TanggalSelesai" class="form-label fw-semibold">Tanggal Berakhir / Batas Akhir <span class="text-danger">*</span></label>
+                        <input asp-for="TanggalSelesai" type="date" class="form-control rounded-3" />
+                        <span asp-validation-for="TanggalSelesai" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Catatan" class="form-label fw-semibold">Catatan / Petunjuk Evaluasi</label>
+                        <textarea asp-for="Catatan" rows="3" class="form-control rounded-3"></textarea>
+                        <span asp-validation-for="Catatan" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                    <a asp-action="Periode" class="btn btn-outline-secondary rounded-3 px-4">Batal</a>
+                    <button type="submit" class="btn text-white px-4 rounded-3" style="background-color: #059669;">
+                        <i data-lucide="check" class="lucide me-1"></i> Perbarui Periode
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        lucide.createIcons();
+    </script>
+}

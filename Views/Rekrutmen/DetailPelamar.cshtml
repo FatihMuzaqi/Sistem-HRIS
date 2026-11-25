@@ -1,0 +1,618 @@
+@model SistemHRD.ViewModels.DetailPelamarViewModel
+@using SistemHRD.Models.Enums
+@{
+    ViewData["Title"] = $"Detail Pelamar - {Model.NamaLengkap}";
+
+    string badgeStatusClass = Model.Status switch
+    {
+        StatusPelamar.Terdaftar => "bg-secondary text-white",
+        StatusPelamar.SeleksiAdministrasi => "bg-info text-dark",
+        StatusPelamar.LolosAdministrasi => "bg-primary text-white",
+        StatusPelamar.Wawancara => "bg-warning text-dark",
+        StatusPelamar.Diterima => "bg-success text-white",
+        StatusPelamar.Ditolak => "bg-danger text-white",
+        StatusPelamar.Cadangan => "bg-secondary text-white",
+        _ => "bg-light text-dark"
+    };
+}
+
+<div class="container-fluid py-3">
+    <!-- Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-action="Pelamar" class="btn btn-outline-secondary rounded-3 px-3">
+                        <i data-lucide="arrow-left" class="lucide me-1"></i> Kembali
+                    </a>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h4 class="fw-bold mb-0 text-dark">@Model.NamaLengkap</h4>
+                            <span class="badge @badgeStatusClass rounded-pill px-3 py-1">@Model.Status</span>
+                        </div>
+                        <p class="text-muted small mb-0 mt-1">
+                            <span class="fw-semibold">No. Reg:</span> @Model.NomorRegistrasi &bull;
+                            <span class="fw-semibold">Posisi:</span> @Model.JudulLowongan &bull;
+                            <span class="fw-semibold">Melamar:</span> @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <a asp-action="UnduhCV" asp-route-id="@Model.Id" class="btn btn-outline-primary rounded-3">
+                        <i data-lucide="download" class="lucide me-1"></i> Unduh CV
+                    </a>
+
+                    @if (User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD))
+                    {
+                        <!-- Button Seleksi Administrasi -->
+                        <button type="button" class="btn btn-outline-info rounded-3 text-dark" data-bs-toggle="modal" data-bs-target="#modalSeleksiAdmin">
+                            <i data-lucide="file-check" class="lucide me-1"></i> Seleksi Berkas
+                        </button>
+                    }
+
+                    @if (User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD) || User.IsInRole(NamaPeran.Manager))
+                    {
+                        <!-- Button Jadwal Interview -->
+                        <button type="button" class="btn btn-outline-warning text-dark rounded-3" data-bs-toggle="modal" data-bs-target="#modalJadwalWawancara">
+                            <i data-lucide="calendar" class="lucide me-1"></i> Jadwalkan Interview
+                        </button>
+
+                        <!-- Button Input Hasil Interview -->
+                        <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-toggle="modal" data-bs-target="#modalHasilSeleksi">
+                            <i data-lucide="clipboard-check" class="lucide me-1"></i> Catat Evaluasi
+                        </button>
+                    }
+
+                    @if ((User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD)) && Model.Status != StatusPelamar.Diterima)
+                    {
+                        <!-- Button Terima Kandidat (Hiring) -->
+                        <button type="button" class="btn text-white rounded-3" style="background-color: #059669;" data-bs-toggle="modal" data-bs-target="#modalTerimaKandidat">
+                            <i data-lucide="user-plus" class="lucide me-1"></i> Terima Kandidat
+                        </button>
+                    }
+
+                    @if (Model.Status == StatusPelamar.Diterima && Model.KaryawanId.HasValue)
+                    {
+                        <a asp-controller="Karyawan" asp-action="Detail" asp-route-id="@Model.KaryawanId.Value" class="btn btn-success text-white rounded-3">
+                            <i data-lucide="user" class="lucide me-1"></i> Lihat Data Karyawan
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Sukses / Error -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="check-circle" class="lucide text-success"></i>
+                <span>@TempData["PesanSukses"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="alert-circle" class="lucide text-danger"></i>
+                <span>@TempData["PesanError"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Kolom Kiri: Profil & Informasi Pelamar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h6 class="fw-bold mb-0 text-dark">Biodata Kandidat</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Nama Lengkap</small>
+                        <span class="fw-semibold">@Model.NamaLengkap</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Email</small>
+                        <a href="mailto:@Model.Email" class="text-decoration-none fw-semibold">@Model.Email</a>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Nomor Telepon / WhatsApp</small>
+                        <span class="fw-semibold">@Model.NomorTelepon</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Pendidikan Terakhir</small>
+                        <span class="fw-semibold">@(Model.PendidikanTerakhir ?? "-")</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Institusi & Jurusan</small>
+                        <span class="fw-semibold">@(Model.NamaInstitusi ?? "-") - @(Model.Jurusan ?? "-")</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Pengalaman Kerja</small>
+                        <span class="fw-semibold">@Model.PengalamanKerjaTahun Tahun</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Ekspektasi Gaji</small>
+                        <span class="fw-semibold text-success">@(Model.GajiDiharapkan.HasValue ? Model.GajiDiharapkan.Value.ToString("C0", new System.Globalization.CultureInfo("id-ID")) : "-")</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Berkas CV</small>
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded border bg-light mt-1">
+                            <span class="small text-truncate me-2">@Model.NamaFileCV</span>
+                            <a asp-action="UnduhCV" asp-route-id="@Model.Id" class="btn btn-sm btn-light border text-primary" title="Download CV">
+                                <i data-lucide="download" class="lucide" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Catatan Administrasi</small>
+                        <p class="small text-muted mb-0 bg-light p-2 rounded border mt-1">
+                            @(string.IsNullOrWhiteSpace(Model.CatatanAdministrasi) ? "Tidak ada catatan administrasi." : Model.CatatanAdministrasi)
+                        </p>
+                    </div>
+
+                    @if (Model.Status == StatusPelamar.Diterima)
+                    {
+                        <div class="mt-4 p-3 bg-success-subtle text-success-emphasis rounded-3 border border-success-subtle">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i data-lucide="check-circle" class="lucide text-success"></i>
+                                <span class="fw-bold">Kandidat Telah Diterima</span>
+                            </div>
+                            <small class="d-block">Pelamar resmi dikonversi menjadi karyawan aktif di sistem.</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Card Quick Status Update -->
+            @if (User.IsInRole(NamaPeran.SuperAdmin) || User.IsInRole(NamaPeran.HRD))
+            {
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                        <h6 class="fw-bold mb-0 text-dark">Perbarui Status Pelamar</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="UbahStatusPelamar" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="pelamarId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Status Baru</label>
+                                <select name="statusBaru" class="form-select rounded-3">
+                                    @foreach (StatusPelamar s in Enum.GetValues(typeof(StatusPelamar)))
+                                    {
+                                        if (s == Model.Status)
+                                        {
+                                            <option value="@s" selected>@s</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@s">@s</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Catatan Status</label>
+                                <textarea name="catatan" rows="2" class="form-control rounded-3" placeholder="Alasan perubahan status..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-outline-secondary w-100 rounded-3">
+                                <i data-lucide="refresh-cw" class="lucide me-1"></i> Simpan Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Kolom Kanan: Jadwal & Hasil Seleksi -->
+        <div class="col-lg-8">
+            <!-- Nav Tabs -->
+            <ul class="nav nav-pills mb-3 gap-2" id="pelamarTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill px-4" id="jadwal-tab" data-bs-toggle="pill" data-bs-target="#tab-jadwal" type="button" role="tab">
+                        <i data-lucide="calendar" class="lucide me-1" style="width: 16px; height: 16px;"></i> Jadwal Wawancara (@Model.DaftarJadwalWawancara.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-4" id="hasil-tab" data-bs-toggle="pill" data-bs-target="#tab-hasil" type="button" role="tab">
+                        <i data-lucide="clipboard-check" class="lucide me-1" style="width: 16px; height: 16px;"></i> Evaluasi & Skor (@Model.DaftarHasilSeleksi.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-4" id="pipeline-tab" data-bs-toggle="pill" data-bs-target="#tab-pipeline" type="button" role="tab">
+                        <i data-lucide="git-commit" class="lucide me-1" style="width: 16px; height: 16px;"></i> Pipeline Lowongan (@Model.DaftarTahapanLowongan.Count)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="pelamarTabContent">
+                <!-- TAB 1: Jadwal Wawancara -->
+                <div class="tab-pane fade show active" id="tab-jadwal" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white">
+                        <div class="card-body p-4">
+                            @if (!Model.DaftarJadwalWawancara.Any())
+                            {
+                                <div class="text-center py-5">
+                                    <i data-lucide="calendar-x" class="lucide text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h6 class="fw-semibold text-dark">Belum Ada Jadwal Wawancara</h6>
+                                    <p class="text-muted small">Klik tombol "Jadwalkan Interview" di atas untuk membuat undangan baru.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Tahapan</th>
+                                                <th>Pewawancara</th>
+                                                <th>Waktu & Tanggal</th>
+                                                <th>Metode</th>
+                                                <th>Lokasi / Link</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var j in Model.DaftarJadwalWawancara)
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold">@(j.NamaTahapan ?? "Wawancara")</td>
+                                                    <td>@j.NamaPewawancara</td>
+                                                    <td>
+                                                        <div class="fw-semibold">@j.TanggalWawancara.ToString("dd MMM yyyy")</div>
+                                                        <small class="text-muted">@j.JamMulai.ToString(@"hh\:mm") - @j.JamSelesai.ToString(@"hh\:mm") WIB</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge @(j.Metode == MetodeWawancara.Daring ? "bg-info-subtle text-info-emphasis" : "bg-warning-subtle text-warning-emphasis") rounded-pill px-2">
+                                                            @j.Metode
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-truncate d-inline-block" style="max-width: 160px;" title="@j.LokasiAtauTautan">@j.LokasiAtauTautan</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge @(j.Status == StatusWawancara.Selesai ? "bg-success" : (j.Status == StatusWawancara.Dibatalkan ? "bg-danger" : "bg-primary")) rounded-pill px-2">
+                                                            @j.Status
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Hasil & Skor Evaluasi -->
+                <div class="tab-pane fade" id="tab-hasil" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white">
+                        <div class="card-body p-4">
+                            @if (!Model.DaftarHasilSeleksi.Any())
+                            {
+                                <div class="text-center py-5">
+                                    <i data-lucide="clipboard-x" class="lucide text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h6 class="fw-semibold text-dark">Belum Ada Catatan Evaluasi</h6>
+                                    <p class="text-muted small">Klik tombol "Catat Evaluasi" di atas untuk memasukkan skor penilaian kandidat.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-column gap-3">
+                                    @foreach (var h in Model.DaftarHasilSeleksi)
+                                    {
+                                        string keputusanBadge = h.Keputusan switch
+                                        {
+                                            HasilKeputusanSeleksi.Lolos => "bg-success text-white",
+                                            HasilKeputusanSeleksi.Cadangan => "bg-warning text-dark",
+                                            HasilKeputusanSeleksi.Tolak => "bg-danger text-white",
+                                            _ => "bg-secondary text-white"
+                                        };
+
+                                        <div class="p-3 rounded-3 border bg-light">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <span class="fw-bold text-dark">@(h.NamaTahapan ?? "Evaluasi Seleksi")</span>
+                                                    <small class="text-muted ms-2">&bull; Penilai: <strong>@h.NamaPenilai</strong> &bull; @h.TanggalPenilaian.ToString("dd MMM yyyy")</small>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">Skor: @h.Skor.ToString("F1")</span>
+                                                    <span class="badge @keputusanBadge rounded-pill px-3 py-2">@h.Keputusan</span>
+                                                </div>
+                                            </div>
+                                            <div class="bg-white p-3 rounded-2 border">
+                                                <p class="mb-2 text-dark">@h.CatatanEvaluasi</p>
+                                                <div class="row g-2 pt-2 border-top small">
+                                                    @if (!string.IsNullOrWhiteSpace(h.Kelebihan))
+                                                    {
+                                                        <div class="col-md-6">
+                                                            <span class="text-success fw-semibold"><i data-lucide="plus-circle" class="lucide me-1" style="width: 14px; height: 14px;"></i> Kelebihan:</span>
+                                                            <span class="text-muted">@h.Kelebihan</span>
+                                                        </div>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(h.Kekurangan))
+                                                    {
+                                                        <div class="col-md-6">
+                                                            <span class="text-danger fw-semibold"><i data-lucide="minus-circle" class="lucide me-1" style="width: 14px; height: 14px;"></i> Kekurangan:</span>
+                                                            <span class="text-muted">@h.Kekurangan</span>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Pipeline Lowongan -->
+                <div class="tab-pane fade" id="tab-pipeline" role="tabpanel">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-dark mb-3">Rangkaian Tahapan Seleksi untuk @Model.JudulLowongan</h6>
+                            <div class="list-group list-group-flush border rounded-3">
+                                @foreach (var t in Model.DaftarTahapanLowongan.OrderBy(x => x.Urutan))
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #059669;">
+                                                @t.Urutan
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-semibold text-dark">@t.NamaTahapan</h6>
+                                                <small class="text-muted">Jenis: @t.JenisTahapan - @(t.Keterangan ?? "-")</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge @(t.StatusAktif ? "bg-success-subtle text-success-emphasis" : "bg-light text-muted") rounded-pill px-3">
+                                            @(t.StatusAktif ? "Aktif" : "Nonaktif")
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1: Seleksi Administrasi -->
+<div class="modal fade" id="modalSeleksiAdmin" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <form asp-action="SeleksiAdministrasi" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PelamarId" value="@Model.Id" />
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Seleksi Berkas Administrasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Tentukan kelayakan berkas CV dan syarat administrasi pelamar <strong>@Model.NamaLengkap</strong>.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hasil Keputusan Administrasi</label>
+                        <select name="Lolos" class="form-select rounded-3">
+                            <option value="true">Lolos Seleksi Administrasi</option>
+                            <option value="false">Tidak Lolos (Gugur Berkas)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Administrasi</label>
+                        <textarea name="CatatanAdministrasi" rows="3" class="form-control rounded-3" placeholder="Catatan kesesuaian kualifikasi...">@Model.CatatanAdministrasi</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-3">Simpan Hasil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2: Jadwalkan Wawancara -->
+<div class="modal fade" id="modalJadwalWawancara" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <form asp-action="SimpanJadwalWawancara" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PelamarId" value="@Model.Id" />
+                <input type="hidden" name="NamaPelamar" value="@Model.NamaLengkap" />
+                <input type="hidden" name="JudulLowongan" value="@Model.JudulLowongan" />
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Jadwalkan Wawancara Kandidat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tahapan Wawancara</label>
+                        <select name="TahapanSeleksiId" class="form-select rounded-3">
+                            <option value="">-- Wawancara Umum / HRD --</option>
+                            @foreach (var t in Model.DaftarTahapanLowongan)
+                            {
+                                <option value="@t.Id">Tahap @t.Urutan: @t.NamaTahapan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Pewawancara <span class="text-danger">*</span></label>
+                        <input name="NamaPewawancara" value="@(User.Identity?.Name ?? "Tim HRD")" class="form-control rounded-3" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tanggal <span class="text-danger">*</span></label>
+                            <input name="TanggalWawancara" type="date" value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label fw-semibold">Mulai <span class="text-danger">*</span></label>
+                            <input name="JamMulai" type="time" value="10:00" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label fw-semibold">Selesai <span class="text-danger">*</span></label>
+                            <input name="JamSelesai" type="time" value="11:00" class="form-control rounded-3" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Metode Interview</label>
+                        <select name="Metode" class="form-select rounded-3">
+                            <option value="@MetodeWawancara.Daring">Daring (Google Meet / Zoom)</option>
+                            <option value="@MetodeWawancara.TatapMuka">Tatap Muka (Offline Office)</option>
+                            <option value="@MetodeWawancara.Telepon">Panggilan Telepon</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Lokasi / Tautan Meeting <span class="text-danger">*</span></label>
+                        <input name="LokasiAtauTautan" value="https://meet.google.com/abc-defg-hij" class="form-control rounded-3" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Tambahan untuk Undangan</label>
+                        <textarea name="CatatanUndangan" rows="2" class="form-control rounded-3" placeholder="Siapkan portofolio kode..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning text-dark rounded-3">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 3: Catat Hasil Wawancara / Evaluasi -->
+<div class="modal fade" id="modalHasilSeleksi" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <form asp-action="SimpanHasilWawancara" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PelamarId" value="@Model.Id" />
+                <input type="hidden" name="NamaPelamar" value="@Model.NamaLengkap" />
+                <input type="hidden" name="JudulLowongan" value="@Model.JudulLowongan" />
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Catat Evaluasi & Skor Seleksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tahapan Seleksi</label>
+                        <select name="TahapanSeleksiId" class="form-select rounded-3">
+                            <option value="">-- Wawancara / Ujian Teknis --</option>
+                            @foreach (var t in Model.DaftarTahapanLowongan)
+                            {
+                                <option value="@t.Id">Tahap @t.Urutan: @t.NamaTahapan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Skor Evaluasi (0 - 100) <span class="text-danger">*</span></label>
+                            <input name="Skor" type="number" min="0" max="100" step="0.5" value="85" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Keputusan</label>
+                            <select name="Keputusan" class="form-select rounded-3">
+                                <option value="@HasilKeputusanSeleksi.Lolos">Lolos ke Tahap Lanjut</option>
+                                <option value="@HasilKeputusanSeleksi.Cadangan">Cadangan / Pertimbangan</option>
+                                <option value="@HasilKeputusanSeleksi.Tolak">Tidak Lolos</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Evaluasi / Ulasan <span class="text-danger">*</span></label>
+                        <textarea name="CatatanEvaluasi" rows="3" class="form-control rounded-3" placeholder="Ulasan pemahaman teknis, problem solving, komunikasi..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kelebihan Kandidat</label>
+                        <input name="Kelebihan" class="form-control rounded-3" placeholder="Contoh: Sangat menguasai arsitektur backend .NET Core..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kekurangan / Area Peningkatan</label>
+                        <input name="Kekurangan" class="form-control rounded-3" placeholder="Contoh: Belum banyak pengalaman dengan cloud Kubernetes..." />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary rounded-3">Simpan Evaluasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 4: Terima Kandidat (Konversi Karyawan) -->
+<div class="modal fade" id="modalTerimaKandidat" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0">
+            <form asp-action="TerimaKandidat" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PelamarId" value="@Model.Id" />
+                <input type="hidden" name="NamaPelamar" value="@Model.NamaLengkap" />
+                <input type="hidden" name="JudulLowongan" value="@Model.JudulLowongan" />
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-success">
+                        <i data-lucide="user-check" class="lucide me-1"></i> Penerimaan & Konversi Karyawan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success-subtle text-success-emphasis rounded-3 p-3 mb-3 small">
+                        Tindakan ini akan menerima pelamar <strong>@Model.NamaLengkap</strong> dan membuat entitas Karyawan resmi dalam database secara atomik.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomor Induk Karyawan (NIK) <span class="text-danger">*</span></label>
+                        <input name="NomorIndukKaryawan" class="form-control rounded-3" value="EMP-@(DateTime.Now.ToString("yyyyMMdd"))" required />
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Departemen <span class="text-danger">*</span></label>
+                            <select name="DepartemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select rounded-3" required>
+                                <option value="">-- Pilih Departemen --</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Jabatan <span class="text-danger">*</span></label>
+                            <select name="JabatanId" asp-items="ViewBag.DaftarJabatan" class="form-select rounded-3" required>
+                                <option value="">-- Pilih Jabatan --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tanggal Masuk Kerja <span class="text-danger">*</span></label>
+                            <input name="TanggalMasuk" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Gaji Pokok (Rp) <span class="text-danger">*</span></label>
+                            <input name="GajiPokok" type="number" step="100000" value="@(Model.GajiDiharapkan ?? 8000000)" class="form-control rounded-3" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn text-white rounded-3 px-4" style="background-color: #059669;">
+                        Terima & Buat Karyawan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        lucide.createIcons();
+    </script>
+}
