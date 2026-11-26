@@ -72,6 +72,16 @@ public class KonteksAplikasi : IdentityDbContext<Pengguna, Peran, Guid>
     public DbSet<PenilaianKinerja> PenilaianKinerja => Set<PenilaianKinerja>();
     public DbSet<DetailPenilaian> DetailPenilaian => Set<DetailPenilaian>();
 
+    // Modul Pelatihan
+    public DbSet<ProgramPelatihan> ProgramPelatihan => Set<ProgramPelatihan>();
+    public DbSet<PesertaPelatihan> PesertaPelatihan => Set<PesertaPelatihan>();
+    public DbSet<SertifikatPelatihan> SertifikatPelatihan => Set<SertifikatPelatihan>();
+
+    // Modul Manajemen Aset
+    public DbSet<AsetPerusahaan> AsetPerusahaan => Set<AsetPerusahaan>();
+    public DbSet<PenyerahanAset> PenyerahanAset => Set<PenyerahanAset>();
+    public DbSet<RiwayatAset> RiwayatAset => Set<RiwayatAset>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -741,6 +751,137 @@ public class KonteksAplikasi : IdentityDbContext<Pengguna, Peran, Guid>
             b.HasQueryFilter(d =>
                 !d.IsDeleted &&
                 (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || d.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        // ==========================================
+        // FASE 6: MODUL PELATIHAN & MANAJEMEN ASET
+        // ==========================================
+
+        builder.Entity<ProgramPelatihan>(b =>
+        {
+            b.ToTable("ProgramPelatihan");
+            b.HasIndex(p => new { p.PerusahaanId, p.KodeProgram }).IsUnique();
+            b.HasIndex(p => new { p.PerusahaanId, p.Status });
+            b.HasIndex(p => new { p.PerusahaanId, p.TanggalMulai });
+
+            b.HasOne(p => p.Departemen)
+                .WithMany()
+                .HasForeignKey(p => p.DepartemenId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.HasQueryFilter(p =>
+                !p.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || p.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        builder.Entity<PesertaPelatihan>(b =>
+        {
+            b.ToTable("PesertaPelatihan");
+            b.HasIndex(p => new { p.ProgramPelatihanId, p.KaryawanId }).IsUnique();
+            b.HasIndex(p => new { p.PerusahaanId, p.KaryawanId });
+            b.HasIndex(p => new { p.PerusahaanId, p.StatusKeikutsertaan });
+
+            b.HasOne(p => p.ProgramPelatihan)
+                .WithMany(pr => pr.DaftarPeserta)
+                .HasForeignKey(p => p.ProgramPelatihanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(p => p.Karyawan)
+                .WithMany()
+                .HasForeignKey(p => p.KaryawanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasQueryFilter(p =>
+                !p.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || p.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        builder.Entity<SertifikatPelatihan>(b =>
+        {
+            b.ToTable("SertifikatPelatihan");
+            b.HasIndex(s => new { s.PerusahaanId, s.NomorSertifikat }).IsUnique();
+            b.HasIndex(s => new { s.PerusahaanId, s.KodeVerifikasi }).IsUnique();
+            b.HasIndex(s => s.PesertaPelatihanId).IsUnique();
+
+            b.HasOne(s => s.PesertaPelatihan)
+                .WithOne(p => p.Sertifikat)
+                .HasForeignKey<SertifikatPelatihan>(s => s.PesertaPelatihanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasQueryFilter(s =>
+                !s.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || s.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        builder.Entity<AsetPerusahaan>(b =>
+        {
+            b.ToTable("AsetPerusahaan");
+            b.HasIndex(a => new { a.PerusahaanId, a.NomorAset }).IsUnique();
+            b.HasIndex(a => new { a.PerusahaanId, a.Kategori });
+            b.HasIndex(a => new { a.PerusahaanId, a.Status });
+            b.HasIndex(a => new { a.PerusahaanId, a.Kondisi });
+
+            b.HasOne(a => a.PemegangSaatIni)
+                .WithMany()
+                .HasForeignKey(a => a.PemegangSaatIniId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.HasQueryFilter(a =>
+                !a.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || a.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        builder.Entity<PenyerahanAset>(b =>
+        {
+            b.ToTable("PenyerahanAset");
+            b.HasIndex(p => new { p.PerusahaanId, p.NomorDokumen }).IsUnique();
+            b.HasIndex(p => new { p.PerusahaanId, p.AsetPerusahaanId });
+            b.HasIndex(p => new { p.PerusahaanId, p.KaryawanId });
+
+            b.HasOne(p => p.AsetPerusahaan)
+                .WithMany(a => a.DaftarPenyerahan)
+                .HasForeignKey(p => p.AsetPerusahaanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(p => p.Karyawan)
+                .WithMany()
+                .HasForeignKey(p => p.KaryawanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(p => p.DiserahkanOleh)
+                .WithMany()
+                .HasForeignKey(p => p.DiserahkanOlehId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(p => p.DiterimaKembaliOleh)
+                .WithMany()
+                .HasForeignKey(p => p.DiterimaKembaliOlehId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.HasQueryFilter(p =>
+                !p.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || p.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
+        });
+
+        builder.Entity<RiwayatAset>(b =>
+        {
+            b.ToTable("RiwayatAset");
+            b.HasIndex(r => new { r.PerusahaanId, r.AsetPerusahaanId });
+            b.HasIndex(r => new { r.PerusahaanId, r.TanggalAktivitas });
+
+            b.HasOne(r => r.AsetPerusahaan)
+                .WithMany(a => a.DaftarRiwayat)
+                .HasForeignKey(r => r.AsetPerusahaanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(r => r.KaryawanTerkait)
+                .WithMany()
+                .HasForeignKey(r => r.KaryawanTerkaitId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            b.HasQueryFilter(r =>
+                !r.IsDeleted &&
+                (_layananTenant == null || _layananTenant.IsSuperAdmin || _layananTenant.PerusahaanIdSaatIni == null || r.PerusahaanId == _layananTenant.PerusahaanIdSaatIni));
         });
     }
 
