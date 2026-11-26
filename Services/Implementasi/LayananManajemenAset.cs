@@ -175,9 +175,9 @@ public class LayananManajemenAset : ILayananManajemenAset
     {
         var a = await _context.AsetPerusahaan
             .Include(ast => ast.PemegangSaatIni)
-                .ThenInclude(k => k.Departemen)
+                .ThenInclude(k => k!.Departemen)
             .Include(ast => ast.PemegangSaatIni)
-                .ThenInclude(k => k.Jabatan)
+                .ThenInclude(k => k!.Jabatan)
             .Include(ast => ast.DaftarPenyerahan)
                 .ThenInclude(p => p.Karyawan)
             .Include(ast => ast.DaftarRiwayat)
