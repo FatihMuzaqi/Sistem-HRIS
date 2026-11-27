@@ -374,7 +374,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nomor Dokumen BAST <span class="text-danger">*</span></label>
-                        <input type="text" name="NomorDokumen" value="BAST-@DateTime.Now.ToString("yyyyMMdd")-@new Random().Next(100, 999)" class="form-control" required />
+                        <input type="text" name="NomorDokumen" value="BAST-@DateTime.Now.ToString("yyyyMMdd")-@(new Random().Next(100, 999))" class="form-control" required />
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-6">

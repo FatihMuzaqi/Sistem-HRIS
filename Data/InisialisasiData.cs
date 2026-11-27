@@ -1252,6 +1252,7 @@ public static class InisialisasiData
 
             if (karyawanRian != null)
             {
+                var userHrd = await userManager.FindByEmailAsync("hrd@solusihr.id");
                 var penyerahanLaptop = new PenyerahanAset
                 {
                     Id = Guid.NewGuid(),
@@ -1264,7 +1265,7 @@ public static class InisialisasiData
                     StatusPeminjaman = "Aktif",
                     KelengkapanAset = "Unit Laptop, Adaptor 65W USB-C, Tas Lenovo ThinkPad, Mouse Wireless",
                     CatatanPenyerahan = "Penyerahan fasilitas laptop kerja utama karyawan.",
-                    DiserahkanOleh = "HRD & IT Support",
+                    DiserahkanOlehId = userHrd?.Id ?? Guid.NewGuid(),
                     CreatedAt = DateTimeOffset.UtcNow,
                     CreatedBy = "Sistem"
                 };
