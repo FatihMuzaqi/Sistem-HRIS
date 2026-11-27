@@ -1,0 +1,138 @@
+@model SistemHRD.ViewModels.FormProgramPelatihanViewModel
+@{
+    ViewData["Title"] = "Ubah Program Pelatihan";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i data-lucide="edit-3" class="me-2 text-primary" style="width:26px;height:26px;display:inline-block;vertical-align:bottom;"></i>
+                Perbarui Program Pelatihan
+            </h4>
+            <p class="text-muted small mb-0">Ubah konfigurasi materi, instruktur, jadwal, atau status pelatihan.</p>
+        </div>
+        <a asp-action="DetailProgram" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+            <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+            Kembali
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="UbahProgram" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="KodeProgram" class="form-label fw-semibold text-dark">Kode Program <span class="text-danger">*</span></label>
+                        <input asp-for="KodeProgram" class="form-control" />
+                        <span asp-validation-for="KodeProgram" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="NamaProgram" class="form-label fw-semibold text-dark">Nama / Judul Pelatihan <span class="text-danger">*</span></label>
+                        <input asp-for="NamaProgram" class="form-control" />
+                        <span asp-validation-for="NamaProgram" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Deskripsi" class="form-label fw-semibold text-dark">Deskripsi & Sasaran Kompetensi <span class="text-danger">*</span></label>
+                        <textarea asp-for="Deskripsi" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Deskripsi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Penyelenggara" class="form-label fw-semibold text-dark">Penyelenggara <span class="text-danger">*</span></label>
+                        <input asp-for="Penyelenggara" class="form-control" />
+                        <span asp-validation-for="Penyelenggara" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Instruktur" class="form-label fw-semibold text-dark">Nama Instruktur / Fasilitator</label>
+                        <input asp-for="Instruktur" class="form-control" />
+                        <span asp-validation-for="Instruktur" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="DepartemenId" class="form-label fw-semibold text-dark">Khusus Departemen</label>
+                        <select asp-for="DepartemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select">
+                            <option value="">Semua Departemen (Umum)</option>
+                        </select>
+                        <span asp-validation-for="DepartemenId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Metode" class="form-label fw-semibold text-dark">Metode Pelaksanaan <span class="text-danger">*</span></label>
+                        <select asp-for="Metode" class="form-select">
+                            @foreach (SistemHRD.Models.Enums.MetodePelatihan m in Enum.GetValues(typeof(SistemHRD.Models.Enums.MetodePelatihan)))
+                            {
+                                <option value="@m">@m</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Metode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="LokasiAtauTautan" class="form-label fw-semibold text-dark">Ruangan / Tautan Daring <span class="text-danger">*</span></label>
+                        <input asp-for="LokasiAtauTautan" class="form-control" />
+                        <span asp-validation-for="LokasiAtauTautan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="TanggalMulai" class="form-label fw-semibold text-dark">Tanggal Mulai <span class="text-danger">*</span></label>
+                        <input asp-for="TanggalMulai" type="date" class="form-control" />
+                        <span asp-validation-for="TanggalMulai" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="TanggalSelesai" class="form-label fw-semibold text-dark">Tanggal Selesai <span class="text-danger">*</span></label>
+                        <input asp-for="TanggalSelesai" type="date" class="form-control" />
+                        <span asp-validation-for="TanggalSelesai" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="TotalJam" class="form-label fw-semibold text-dark">Total Jam</label>
+                        <input asp-for="TotalJam" type="number" step="0.5" class="form-control" />
+                        <span asp-validation-for="TotalJam" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="MaksimalPeserta" class="form-label fw-semibold text-dark">Kapasitas Maksimal</label>
+                        <input asp-for="MaksimalPeserta" type="number" class="form-control" />
+                        <span asp-validation-for="MaksimalPeserta" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="BiayaPerPeserta" class="form-label fw-semibold text-dark">Biaya / Peserta (Rp)</label>
+                        <input asp-for="BiayaPerPeserta" type="number" class="form-control" />
+                        <span asp-validation-for="BiayaPerPeserta" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label fw-semibold text-dark">Status Pelatihan <span class="text-danger">*</span></label>
+                        <select asp-for="Status" class="form-select">
+                            @foreach (SistemHRD.Models.Enums.StatusPelatihan s in Enum.GetValues(typeof(SistemHRD.Models.Enums.StatusPelatihan)))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="DetailProgram" asp-route-id="@Model.Id" class="btn btn-light border px-4">Batal</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i data-lucide="save" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

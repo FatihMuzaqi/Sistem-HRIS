@@ -1,0 +1,259 @@
+@model SistemHRD.ViewModels.DashboardAsetViewModel
+@{
+    ViewData["Title"] = "Pusat Manajemen Inventaris Aset Perusahaan";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header Page -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i data-lucide="package" class="me-2 text-success" style="width:28px;height:28px;display:inline-block;vertical-align:bottom;"></i>
+                Pusat Inventaris & Manajemen Aset Perusahaan
+            </h4>
+            <p class="text-muted small mb-0">Kelola master inventaris, pelacakan pemegang aset (BAST), kondisi fisik, dan nilai buku aset perusahaan.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Daftar" class="btn btn-outline-secondary">
+                <i data-lucide="list" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Daftar Inventaris
+            </a>
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+            {
+                <a asp-action="TambahAset" class="btn btn-success text-white">
+                    <i data-lucide="plus-circle" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                    Aset Baru
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Alert Notifikasi -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="check-circle" class="me-2 text-success" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanSukses"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="alert-circle" class="me-2 text-danger" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanError"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">TOTAL INVENTARIS</span>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded text-primary">
+                            <i data-lucide="box" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">@Model.TotalAset</h3>
+                    <div class="small text-muted">Unit aset terdata di sistem</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">SEDANG DIGUNAKAN</span>
+                        <div class="bg-success bg-opacity-10 p-2 rounded text-success">
+                            <i data-lucide="user-check" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">@Model.TotalAsetDigunakan</h3>
+                    <div class="small text-muted">Dipegang oleh karyawan</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">TERSEDIA DI GUDANG</span>
+                        <div class="bg-info bg-opacity-10 p-2 rounded text-info">
+                            <i data-lucide="archive" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">@Model.TotalAsetTersedia</h3>
+                    <div class="small text-muted">Siap diserahkan (Ready to use)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">TOTAL NILAI ASET</span>
+                        <div class="bg-warning bg-opacity-10 p-2 rounded text-warning">
+                            <i data-lucide="wallet" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark">Rp @Model.TotalNilaiInventaris.ToString("N0")</h4>
+                    <div class="small text-muted">Nilai perolehan inventaris</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-3">
+        <!-- Aset Terbaru & Status -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i data-lucide="clock" class="me-2 text-primary" style="width:18px;height:18px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Aset Inventaris Terbaru
+                    </h6>
+                    <a asp-action="Daftar" class="btn btn-sm btn-link text-decoration-none">Lihat Semua &rarr;</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted small">
+                                <tr>
+                                    <th>NOMOR & NAMA ASET</th>
+                                    <th>KATEGORI</th>
+                                    <th>KONDISI</th>
+                                    <th>STATUS</th>
+                                    <th>PEMEGANG SAAT INI</th>
+                                    <th class="text-end">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.AsetTerbaru.Any())
+                                {
+                                    @foreach (var ast in Model.AsetTerbaru)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-dark">@ast.NamaAset</div>
+                                                <div class="text-muted small"><code>@ast.NomorAset</code> &bull; @(ast.MerkModel ?? "-")</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">@ast.Kategori</span>
+                                            </td>
+                                            <td>
+                                                @switch (ast.Kondisi)
+                                                {
+                                                    case SistemHRD.Models.Enums.KondisiAset.SangatBaik:
+                                                        <span class="badge bg-success">Sangat Baik</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.KondisiAset.Baik:
+                                                        <span class="badge bg-primary">Baik</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.KondisiAset.RusakRingan:
+                                                        <span class="badge bg-warning text-dark">Rusak Ringan</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.KondisiAset.RusakBerat:
+                                                        <span class="badge bg-danger">Rusak Berat</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.KondisiAset.Hilang:
+                                                        <span class="badge bg-dark">Hilang</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (ast.Status)
+                                                {
+                                                    case SistemHRD.Models.Enums.StatusAset.Tersedia:
+                                                        <span class="badge bg-info text-dark">Tersedia</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.StatusAset.Digunakan:
+                                                        <span class="badge bg-success">Digunakan</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.StatusAset.DalamPerbaikan:
+                                                        <span class="badge bg-warning text-dark">Perbaikan</span>
+                                                        break;
+                                                    case SistemHRD.Models.Enums.StatusAset.Dihapuskan:
+                                                        <span class="badge bg-secondary">Dihapus</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrWhiteSpace(ast.NamaPemegang))
+                                                {
+                                                    <div class="small fw-semibold text-dark">@ast.NamaPemegang</div>
+                                                    <div class="text-muted small"><code>@ast.NIKPemegang</code></div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">Di Gudang (Tersedia)</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <a asp-action="DetailAset" asp-route-id="@ast.Id" class="btn btn-sm btn-outline-primary">
+                                                    Detail
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i data-lucide="inbox" class="d-block mx-auto mb-2 text-muted" style="width:36px;height:36px;"></i>
+                                            Belum ada inventaris aset yang terdata.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Distribusi Kategori & Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">Distribusi Kategori Inventaris</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var k in Model.StatistikKategori)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                                <span class="small text-muted"><span class="badge bg-secondary me-2">&bull;</span>@k.Key</span>
+                                <span class="fw-bold text-dark">@k.Value Unit</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold text-dark mb-2">Menu Cepat Inventaris</h6>
+                    <div class="d-grid gap-2">
+                        <a asp-action="Daftar" class="btn btn-white border text-start d-flex align-items-center justify-content-between">
+                            <span><i data-lucide="package" class="me-2 text-primary" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i> Seluruh Inventaris Aset</span>
+                            <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
+                        </a>
+                        <a asp-controller="Laporan" asp-action="Aset" class="btn btn-white border text-start d-flex align-items-center justify-content-between">
+                            <span><i data-lucide="file-spreadsheet" class="me-2 text-success" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i> Laporan Inventaris & Ekspor CSV</span>
+                            <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
+                        </a>
+                        <a asp-action="RiwayatSaya" class="btn btn-white border text-start d-flex align-items-center justify-content-between">
+                            <span><i data-lucide="user-check" class="me-2 text-warning" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i> Aset Yang Saya Pegang (ESS)</span>
+                            <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

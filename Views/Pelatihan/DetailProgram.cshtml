@@ -1,0 +1,346 @@
+@model SistemHRD.ViewModels.DetailProgramPelatihanViewModel
+@{
+    ViewData["Title"] = $"Detail Program - {Model.NamaProgram}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Nav -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Pelatihan</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Program">Program</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.KodeProgram</li>
+                </ol>
+            </nav>
+            <h4 class="fw-bold mb-0 text-dark">@Model.NamaProgram</h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Program" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Kembali
+            </a>
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+            {
+                <a asp-action="UbahProgram" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                    <i data-lucide="edit-3" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                    Ubah
+                </a>
+                <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#modalDaftarPeserta">
+                    <i data-lucide="user-plus" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                    Daftar Peserta
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Alert Notifikasi -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="check-circle" class="me-2 text-success" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanSukses"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="alert-circle" class="me-2 text-danger" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanError"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Info Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-secondary"><code>@Model.KodeProgram</code></span>
+                        <span class="badge bg-info text-dark">@Model.Metode</span>
+                        <span class="badge bg-light text-dark border">@Model.NamaDepartemen</span>
+                        @switch (Model.Status)
+                        {
+                            case SistemHRD.Models.Enums.StatusPelatihan.Draf:
+                                <span class="badge bg-secondary">Draf</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusPelatihan.PendaftaranDibuka:
+                                <span class="badge bg-info text-dark">Pendaftaran Dibuka</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusPelatihan.Berlangsung:
+                                <span class="badge bg-primary">Berlangsung</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusPelatihan.Selesai:
+                                <span class="badge bg-success">Selesai</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusPelatihan.Dibatalkan:
+                                <span class="badge bg-danger">Dibatalkan</span>
+                                break;
+                        }
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2">Deskripsi & Sasaran</h5>
+                    <p class="text-muted mb-3" style="white-space:pre-line;">@Model.Deskripsi</p>
+
+                    <div class="row g-3 pt-2 border-top">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Penyelenggara:</span>
+                            <span class="fw-semibold text-dark">@Model.Penyelenggara</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Instruktur / Fasilitator:</span>
+                            <span class="fw-semibold text-dark">@(string.IsNullOrWhiteSpace(Model.Instruktur) ? "-" : Model.Instruktur)</span>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted small d-block">Lokasi / Tautan Akses:</span>
+                            <span class="fw-semibold text-dark">@Model.LokasiAtauTautan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 border-start-lg">
+                    <div class="bg-light p-3 rounded h-100">
+                        <h6 class="fw-bold text-dark mb-3">Ringkasan Jadwal & Kuota</h6>
+                        <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+                            <li class="d-flex justify-content-between">
+                                <span class="text-muted">Jadwal Mulai:</span>
+                                <span class="fw-semibold text-dark">@Model.TanggalMulai.ToString("dd MMM yyyy")</span>
+                            </li>
+                            <li class="d-flex justify-content-between">
+                                <span class="text-muted">Jadwal Selesai:</span>
+                                <span class="fw-semibold text-dark">@Model.TanggalSelesai.ToString("dd MMM yyyy")</span>
+                            </li>
+                            <li class="d-flex justify-content-between">
+                                <span class="text-muted">Total Jam Pelatihan:</span>
+                                <span class="fw-semibold text-dark">@Model.TotalJam Jam</span>
+                            </li>
+                            <li class="d-flex justify-content-between">
+                                <span class="text-muted">Biaya per Peserta:</span>
+                                <span class="fw-semibold text-dark">@(Model.BiayaPerPeserta > 0 ? $"Rp {Model.BiayaPerPeserta:N0}" : "Gratis")</span>
+                            </li>
+                            <li class="d-flex justify-content-between border-top pt-2">
+                                <span class="text-muted">Peserta Terdaftar:</span>
+                                <span class="fw-bold text-primary">@Model.DaftarPeserta.Count / @(Model.MaksimalPeserta > 0 ? Model.MaksimalPeserta.ToString() : "&infin;")</span>
+                            </li>
+                            <li class="d-flex justify-content-between">
+                                <span class="text-muted">Lulus Kompeten:</span>
+                                <span class="fw-bold text-success">@Model.DaftarPeserta.Count(p => p.Status == SistemHRD.Models.Enums.StatusKeikutsertaan.Lulus) Peserta</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peserta Pelatihan Section -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i data-lucide="users" class="me-2 text-primary" style="width:18px;height:18px;display:inline-block;vertical-align:text-bottom;"></i>
+                Daftar Peserta Pelatihan (@Model.DaftarPeserta.Count Karyawan)
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-muted small">
+                        <tr>
+                            <th>NIK & NAMA KARYAWAN</th>
+                            <th>DEPARTEMEN / JABATAN</th>
+                            <th>STATUS KEIKUTSERTAAN</th>
+                            <th>NILAI AKHIR</th>
+                            <th>SERTIFIKAT</th>
+                            <th>TANGGAL DAFTAR</th>
+                            <th class="text-end">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.DaftarPeserta.Any())
+                        {
+                            @foreach (var ps in Model.DaftarPeserta)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@ps.NamaKaryawan</div>
+                                        <div class="text-muted small"><code>@ps.NIK</code></div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">@ps.NamaDepartemen</div>
+                                        <div class="text-muted small">@ps.NamaJabatan</div>
+                                    </td>
+                                    <td>
+                                        @switch (ps.Status)
+                                        {
+                                            case SistemHRD.Models.Enums.StatusKeikutsertaan.Terdaftar:
+                                                <span class="badge bg-secondary">Terdaftar</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusKeikutsertaan.SedangMengikuti:
+                                                <span class="badge bg-primary">Sedang Mengikuti</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusKeikutsertaan.Lulus:
+                                                <span class="badge bg-success">Lulus</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusKeikutsertaan.TidakLulus:
+                                                <span class="badge bg-danger">Tidak Lulus</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusKeikutsertaan.Batal:
+                                                <span class="badge bg-dark">Batal</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (ps.NilaiAkhir.HasValue)
+                                        {
+                                            <span class="fw-bold @(ps.NilaiAkhir >= 70 ? "text-success" : "text-danger")">@ps.NilaiAkhir.Value.ToString("0.0")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (ps.SertifikatId.HasValue)
+                                        {
+                                            <a asp-action="Sertifikat" asp-route-id="@ps.SertifikatId.Value" target="_blank" class="btn btn-sm btn-outline-success">
+                                                <i data-lucide="award" class="me-1" style="width:14px;height:14px;display:inline-block;vertical-align:text-bottom;"></i>
+                                                Sertifikat
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted">@ps.TanggalDidaftarkan.ToString("dd/MM/yyyy")</span>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                                                    onclick="bukaModalNilai('@ps.Id', '@ps.NamaKaryawan', '@((int)ps.Status)', '@(ps.NilaiAkhir?.ToString() ?? "")', '@(ps.Catatan ?? "")')">
+                                                Nilai / Status
+                                            </button>
+                                            <form asp-action="HapusPeserta" method="post" class="d-inline" onsubmit="return confirm('Hapus peserta ini dari program pelatihan?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="pesertaId" value="@ps.Id" />
+                                                <input type="hidden" name="programId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i data-lucide="user-x" class="d-block mx-auto mb-2 text-muted" style="width:36px;height:36px;"></i>
+                                    Belum ada peserta yang didaftarkan pada program pelatihan ini.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Daftar Peserta -->
+<div class="modal fade" id="modalDaftarPeserta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="DaftarPeserta" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProgramPelatihanId" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Daftarkan Karyawan ke Pelatihan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pilih Karyawan <span class="text-danger">*</span></label>
+                        <select name="KaryawanId" asp-items="ViewBag.DaftarKaryawan" class="form-select" required>
+                            <option value="">-- Pilih Karyawan --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Khusus</label>
+                        <textarea name="Catatan" class="form-control" rows="2" placeholder="Catatan atau penugasan (opsional)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success text-white">Daftarkan Peserta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Status & Nilai Peserta -->
+<div class="modal fade" id="modalNilaiPeserta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="PerbaruiStatusPeserta" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="programId" value="@Model.Id" />
+                <input type="hidden" id="editPesertaId" name="PesertaId" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Evaluasi & Nilai Peserta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Nama Peserta</label>
+                        <div id="labelNamaPeserta" class="fw-bold text-dark fs-6"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Status Keikutsertaan</label>
+                        <select id="editStatus" name="StatusKeikutsertaan" class="form-select">
+                            <option value="1">Terdaftar</option>
+                            <option value="2">Sedang Mengikuti</option>
+                            <option value="3">Lulus</option>
+                            <option value="4">Tidak Lulus</option>
+                            <option value="5">Batal</option>
+                        </select>
+                        <div class="small text-muted mt-1">Status <strong>Lulus</strong> akan menerbitkan sertifikat kelulusan resmi.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nilai Akhir (0 s/d 100)</label>
+                        <input id="editNilai" type="number" step="0.1" name="NilaiAkhir" class="form-control" placeholder="Contoh: 85.5" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Evaluasi</label>
+                        <textarea id="editCatatan" name="Catatan" class="form-control" rows="2" placeholder="Evaluasi keaktifan, pemahaman materi..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Evaluasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function bukaModalNilai(pesertaId, namaKaryawan, statusVal, nilai, catatan) {
+            document.getElementById('editPesertaId').value = pesertaId;
+            document.getElementById('labelNamaPeserta').innerText = namaKaryawan;
+            document.getElementById('editStatus').value = statusVal;
+            document.getElementById('editNilai').value = nilai;
+            document.getElementById('editCatatan').value = catatan;
+
+            var modal = new bootstrap.Modal(document.getElementById('modalNilaiPeserta'));
+            modal.show();
+        }
+    </script>
+}

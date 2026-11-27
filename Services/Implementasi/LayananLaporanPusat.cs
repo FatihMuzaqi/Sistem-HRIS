@@ -233,7 +233,7 @@ public class LayananLaporanPusat : ILayananLaporanPusat
                 NamaKaryawan = k.Karyawan != null ? k.Karyawan.NamaLengkap : "-",
                 NamaDepartemen = k.Karyawan != null && k.Karyawan.Departemen != null ? k.Karyawan.Departemen.NamaDepartemen : "-",
                 JamMasuk = k.WaktuMasuk.HasValue ? k.WaktuMasuk.Value.TimeOfDay : null,
-                JamKeluar = k.WaktuKeluar.HasValue ? k.WaktuKeluar.Value.TimeOfDay : null,
+                JamKeluar = k.WaktuPulang.HasValue ? k.WaktuPulang.Value.TimeOfDay : null,
                 StatusKehadiran = k.Status.ToString(),
                 MenitKeterlambatan = k.MenitKeterlambatan,
                 TotalJamKerja = k.TotalJamKerja
@@ -272,7 +272,7 @@ public class LayananLaporanPusat : ILayananLaporanPusat
             .AsNoTracking()
             .Include(k => k.Karyawan)
                 .ThenInclude(k => k!.Departemen)
-            .Include(k => k.JadwalKerja)
+            .Include(k => k.ShiftKerja)
             .Where(k => !k.IsDeleted && k.Tanggal >= tMulai && k.Tanggal <= tSelesai && k.MenitKeterlambatan > 0);
 
         if (departemenId.HasValue && departemenId != Guid.Empty)
@@ -297,7 +297,7 @@ public class LayananLaporanPusat : ILayananLaporanPusat
                 NIK = k.Karyawan != null ? k.Karyawan.NomorIndukKaryawan : "-",
                 NamaKaryawan = k.Karyawan != null ? k.Karyawan.NamaLengkap : "-",
                 NamaDepartemen = k.Karyawan != null && k.Karyawan.Departemen != null ? k.Karyawan.Departemen.NamaDepartemen : "-",
-                JamJadwalMasuk = k.JadwalKerja != null ? k.JadwalKerja.JamMasukJadwal : null,
+                JamJadwalMasuk = k.ShiftKerja != null ? k.ShiftKerja.JamMasuk : null,
                 JamRealisasiMasuk = k.WaktuMasuk.HasValue ? k.WaktuMasuk.Value.TimeOfDay : null,
                 MenitTerlambat = k.MenitKeterlambatan,
                 EstimasiDenda = k.MenitKeterlambatan * 1000
@@ -354,15 +354,15 @@ public class LayananLaporanPusat : ILayananLaporanPusat
                 NamaDepartemen = l.Karyawan != null && l.Karyawan.Departemen != null ? l.Karyawan.Departemen.NamaDepartemen : "-",
                 JamMulai = l.JamMulai,
                 JamSelesai = l.JamSelesai,
-                DurasiJam = l.DurasiJam,
+                DurasiJam = l.TotalJam,
                 AlasanLembur = l.AlasanLembur,
                 StatusPersetujuan = l.Status.ToString()
             })
             .ToListAsync();
 
         var queryDisetujui = query.Where(l => l.Status == StatusPengajuanLembur.Disetujui);
-        var totalJam = await queryDisetujui.SumAsync(l => (decimal?)l.DurasiJam) ?? 0;
-        var totalUang = await queryDisetujui.SumAsync(l => (decimal?)l.UangLemburDisetujui) ?? 0;
+        var totalJam = await queryDisetujui.SumAsync(l => (decimal?)l.TotalJam) ?? 0;
+        var totalUang = totalJam * 25000;
 
         return new LaporanLemburViewModel
         {

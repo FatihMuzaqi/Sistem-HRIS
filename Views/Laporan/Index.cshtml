@@ -1,0 +1,346 @@
+@model SistemHRD.ViewModels.LaporanHubViewModel
+@{
+    ViewData["Title"] = "Pusat Laporan & Analitik Eksekutif";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header Page -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i data-lucide="bar-chart-3" class="me-2 text-success" style="width:28px;height:28px;display:inline-block;vertical-align:bottom;"></i>
+                Pusat Laporan & Analitik Eksekutif SDM
+            </h4>
+            <p class="text-muted small mb-0">Portal pelaporan komprehensif seluruh modul SistemHRD dengan filter periode, analitik performa, dan ekspor data CSV/Excel.</p>
+        </div>
+    </div>
+
+    <!-- Executive Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">KARYAWAN AKTIF</span>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded text-primary">
+                            <i data-lucide="users" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">@Model.TotalKaryawanAktif</h3>
+                    <div class="small text-muted">Headcount aktif perusahaan</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">KEHADIRAN BULAN INI</span>
+                        <div class="bg-success bg-opacity-10 p-2 rounded text-success">
+                            <i data-lucide="calendar-check" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-dark">@Model.PersentaseKehadiranBulanIni%</h3>
+                    <div class="small text-muted">Tingkat kehadiran presensi</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">BEBAN PAYROLL BULAN INI</span>
+                        <div class="bg-warning bg-opacity-10 p-2 rounded text-warning">
+                            <i data-lucide="banknote" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark">Rp @Model.TotalBebanPayrollBulanIni.ToString("N0")</h4>
+                    <div class="small text-muted">Gaji bersih periode berjalan</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small fw-semibold">NILAI INVENTARIS ASET</span>
+                        <div class="bg-info bg-opacity-10 p-2 rounded text-info">
+                            <i data-lucide="package" style="width:20px;height:20px;"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark">Rp @Model.TotalNilaiAset.ToString("N0")</h4>
+                    <div class="small text-muted">@Model.TotalAsetTercatat unit aset tercatat</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hub Kategori Laporan Grid -->
+    <h5 class="fw-bold text-dark mb-3">Pilihan Modul Laporan</h5>
+    <div class="row g-3">
+        <!-- 1. Karyawan & Organisasi -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-primary bg-opacity-10 rounded text-primary">
+                                <i data-lucide="users" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Data & Master Karyawan</h6>
+                                <span class="badge bg-light text-muted border">Modul Karyawan</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Laporan lengkap direktori karyawan, NIK, jabatan, status kepegawaian, tanggal masuk, dan filter departemen.</p>
+                    </div>
+                    <div class="d-flex gap-2 border-top pt-3">
+                        <a asp-action="Karyawan" class="btn btn-sm btn-outline-primary flex-grow-1">Buka Laporan</a>
+                        <a asp-action="EksporKaryawan" class="btn btn-sm btn-light border" title="Ekspor CSV">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i> CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Distribusi Departemen -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-success bg-opacity-10 rounded text-success">
+                                <i data-lucide="building-2" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Distribusi Departemen</h6>
+                                <span class="badge bg-light text-muted border">Organisasi</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Statistik komposisi karyawan berdasarkan unit kerja, rasio gender, status kontrak vs tetap antar departemen.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Departemen" class="btn btn-sm btn-outline-success w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Presensi & Kehadiran -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-info bg-opacity-10 rounded text-info">
+                                <i data-lucide="calendar" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Rekapitulasi Kehadiran</h6>
+                                <span class="badge bg-light text-muted border">Presensi</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Rekap presensi harian masuk dan pulang, rekap izin, sakit, alpa, serta total jam kerja dengan filter tanggal.</p>
+                    </div>
+                    <div class="d-flex gap-2 border-top pt-3">
+                        <a asp-action="Kehadiran" class="btn btn-sm btn-outline-info flex-grow-1">Buka Laporan</a>
+                        <a asp-action="EksporKehadiran" class="btn btn-sm btn-light border" title="Ekspor CSV">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i> CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Keterlambatan -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-danger bg-opacity-10 rounded text-danger">
+                                <i data-lucide="clock" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Analisis Keterlambatan</h6>
+                                <span class="badge bg-light text-muted border">Kedisiplinan</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Monitoring keterlambatan jam masuk kerja, akumulasi durasi telat (menit), dan estimasi penyesuaian operasional.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Keterlambatan" class="btn btn-sm btn-outline-danger w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Kerja Lembur -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-secondary bg-opacity-10 rounded text-secondary">
+                                <i data-lucide="briefcase" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Laporan Kerja Lembur</h6>
+                                <span class="badge bg-light text-muted border">Overtime</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Akumulasi pengajuan lembur karyawan, jam kerja tambahan yang disetujui, dan estimasi beban uang lembur.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Lembur" class="btn btn-sm btn-outline-secondary w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Cuti Karyawan -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded text-warning">
+                                <i data-lucide="calendar-off" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Penggunaan Cuti</h6>
+                                <span class="badge bg-light text-muted border">Manajemen Cuti</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Laporan utilisasi hak cuti tahunan, cuti melahirkan, izin khusus, dan verifikasi persetujuan multi-level.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Cuti" class="btn btn-sm btn-outline-warning text-dark w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Penggajian / Payroll -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-success bg-opacity-10 rounded text-success">
+                                <i data-lucide="credit-card" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Penggajian & Kompensasi</h6>
+                                <span class="badge bg-light text-muted border">Finansial / HR</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Rekapitulasi beban payroll per periode, rincian gaji pokok, tunjangan, lembur, potongan BPJS/PPh 21, dan gaji bersih.</p>
+                    </div>
+                    <div class="d-flex gap-2 border-top pt-3">
+                        <a asp-action="Penggajian" class="btn btn-sm btn-outline-success flex-grow-1">Buka Laporan</a>
+                        <a asp-action="EksporPenggajian" class="btn btn-sm btn-light border" title="Ekspor CSV">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i> CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Rekrutmen & Pelamar -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-primary bg-opacity-10 rounded text-primary">
+                                <i data-lucide="user-plus" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Rekrutmen & Pelamar</h6>
+                                <span class="badge bg-light text-muted border">Talent Acquisition</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Statistik corong penerimaan kandidat dari pelamar masuk, tahapan seleksi, wawancara, hingga kandidat diterima.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Rekrutmen" class="btn btn-sm btn-outline-primary w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. Evaluasi Kinerja (KPI) -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-info bg-opacity-10 rounded text-info">
+                                <i data-lucide="trending-up" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Evaluasi Kinerja (KPI)</h6>
+                                <span class="badge bg-light text-muted border">Performance</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Distribusi skor penilaian kinerja karyawan, rata-rata skor per divisi, dan pemetaan predikat kompetensi.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Kinerja" class="btn btn-sm btn-outline-info w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. Pelatihan & Sertifikasi -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded text-warning">
+                                <i data-lucide="award" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Pelatihan & Sertifikasi</h6>
+                                <span class="badge bg-light text-muted border">People Development</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Laporan jumlah program pengembangan SDM, tingkat kelulusan kompetensi, dan realisasi biaya pelatihan.</p>
+                    </div>
+                    <div class="border-top pt-3">
+                        <a asp-action="Pelatihan" class="btn btn-sm btn-outline-warning text-dark w-100">Buka Laporan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. Inventaris Aset -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="p-3 bg-success bg-opacity-10 rounded text-success">
+                                <i data-lucide="package" style="width:24px;height:24px;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Inventaris Aset Perusahaan</h6>
+                                <span class="badge bg-light text-muted border">Asset Management</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Daftar inventaris fisik kantor, pemegang aset, kondisi kelayakan, dan rekapitulasi nilai buku perolehan.</p>
+                    </div>
+                    <div class="d-flex gap-2 border-top pt-3">
+                        <a asp-action="Aset" class="btn btn-sm btn-outline-success flex-grow-1">Buka Laporan</a>
+                        <a asp-action="EksporAset" class="btn btn-sm btn-light border" title="Ekspor CSV">
+                            <i data-lucide="download" style="width:14px;height:14px;"></i> CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

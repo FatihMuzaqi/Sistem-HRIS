@@ -1,0 +1,210 @@
+@model SistemHRD.ViewModels.LembarSertifikatViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sertifikat Pelatihan - @Model.NomorSertifikat</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        @@page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1f2937;
+            padding: 20px;
+        }
+        .certificate-container {
+            max-width: 1050px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .certificate-border {
+            border: 8px double #059669;
+            padding: 35px 40px;
+            position: relative;
+            background: radial-gradient(circle at center, #ffffff 60%, #f0fdf4 100%);
+        }
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .company-name {
+            font-size: 16px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 5px;
+        }
+        .cert-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #111827;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .cert-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            letter-spacing: 1px;
+        }
+        .recipient-block {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .presented-to {
+            font-size: 15px;
+            font-style: italic;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+        .recipient-name {
+            font-size: 30px;
+            font-weight: 800;
+            color: #065f46;
+            text-decoration: underline;
+            text-underline-offset: 8px;
+            margin-bottom: 5px;
+        }
+        .recipient-nik {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .description-block {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 35px auto;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #374151;
+        }
+        .training-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            display: block;
+            margin: 10px 0;
+        }
+        .footer-block {
+            margin-top: 30px;
+        }
+        .signature-line {
+            width: 200px;
+            border-bottom: 2px solid #111827;
+            margin: 0 auto 8px auto;
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.04;
+            font-size: 110px;
+            font-weight: 900;
+            text-transform: uppercase;
+            pointer-events: none;
+            letter-spacing: 10px;
+            color: #059669;
+        }
+        .verification-badge {
+            background-color: #f0fdf4;
+            border: 1px dashed #059669;
+            padding: 8px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 12px;
+            color: #065f46;
+        }
+        @@media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .certificate-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print text-center mb-3">
+        <button onclick="window.print()" class="btn btn-success me-2">
+            Cetak / Simpan PDF
+        </button>
+        <button onclick="window.close()" class="btn btn-secondary">
+            Tutup
+        </button>
+    </div>
+
+    <div class="certificate-container">
+        <div class="certificate-border">
+            <div class="watermark">SMART HRIS</div>
+
+            <!-- Header -->
+            <div class="certificate-header">
+                <div class="company-name">@Model.NamaPerusahaan</div>
+                <div class="cert-title">SERTIFIKAT KELULUSAN</div>
+                <div class="cert-subtitle">NOMOR: @Model.NomorSertifikat</div>
+            </div>
+
+            <!-- Recipient -->
+            <div class="recipient-block">
+                <div class="presented-to">Sertifikat ini dengan bangga dianugerahkan kepada:</div>
+                <div class="recipient-name">@Model.NamaKaryawan</div>
+                <div class="recipient-nik">NIK: @Model.NIK &bull; Departemen: @Model.NamaDepartemen</div>
+            </div>
+
+            <!-- Description -->
+            <div class="description-block">
+                Telah berhasil menyelesaikan seluruh rangkaian program pengembangan kompetensi dan dinyatakan <strong>LULUS KOMPETEN</strong> pada pelatihan:
+                <span class="training-title">@Model.NamaProgram</span>
+                Pelatihan diselenggarakan pada tanggal @Model.TanggalMulai.ToString("dd MMMM yyyy") s/d @Model.TanggalSelesai.ToString("dd MMMM yyyy")
+                dengan durasi setara <strong>@Model.TotalJam Jam Pelatihan</strong>.
+                @if (Model.NilaiAkhir.HasValue)
+                {
+                    <div class="mt-2 text-success fw-bold">Predikat Kelulusan: @(Model.NilaiAkhir >= 85 ? "Sangat Memuaskan" : "Memuaskan") (Skor: @Model.NilaiAkhir.Value.ToString("0.0"))</div>
+                }
+            </div>
+
+            <!-- Footer Signatures -->
+            <div class="footer-block">
+                <div class="row align-items-end text-center">
+                    <div class="col-4">
+                        <div class="verification-badge">
+                            <div><strong>KODE VALIDASI</strong></div>
+                            <code>@Model.KodeVerifikasi</code>
+                            <div class="small text-muted" style="font-size:10px;">Terverifikasi Sistem HRIS</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-muted mb-4">Diterbitkan pada: @Model.TanggalTerbit.ToString("dd MMMM yyyy")</div>
+                        <div style="font-size: 11px; color: #6b7280;">Dokumen ini sah dan diterbitkan secara digital oleh Sistem Informasi Manajemen SDM (Smart HRIS).</div>
+                    </div>
+                    <div class="col-4">
+                        <div style="height: 45px;"></div>
+                        <div class="signature-line"></div>
+                        <div class="fw-bold text-dark">@Model.PenerbitSertifikat</div>
+                        <div class="small text-muted">People Development & Training Head</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

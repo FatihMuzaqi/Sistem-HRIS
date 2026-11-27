@@ -1,0 +1,121 @@
+@model SistemHRD.ViewModels.FormAsetViewModel
+@{
+    ViewData["Title"] = "Tambah Aset Inventaris";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i data-lucide="plus-circle" class="me-2 text-success" style="width:26px;height:26px;display:inline-block;vertical-align:bottom;"></i>
+                Pencatatan Aset Inventaris Baru
+            </h4>
+            <p class="text-muted small mb-0">Daftarkan aset perusahaan baru, spesifikasi teknis, nomor seri, dan nilai perolehan.</p>
+        </div>
+        <a asp-action="Daftar" class="btn btn-outline-secondary">
+            <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+            Kembali
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="TambahAset" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="NomorAset" class="form-label fw-semibold text-dark">Nomor Aset / Barcode <span class="text-danger">*</span></label>
+                        <input asp-for="NomorAset" class="form-control" />
+                        <span asp-validation-for="NomorAset" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="NamaAset" class="form-label fw-semibold text-dark">Nama Aset <span class="text-danger">*</span></label>
+                        <input asp-for="NamaAset" class="form-control" placeholder="Contoh: Laptop ThinkPad T14 Gen 4" />
+                        <span asp-validation-for="NamaAset" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Kategori" class="form-label fw-semibold text-dark">Kategori Aset <span class="text-danger">*</span></label>
+                        <select asp-for="Kategori" class="form-select">
+                            @foreach (SistemHRD.Models.Enums.KategoriAset k in Enum.GetValues(typeof(SistemHRD.Models.Enums.KategoriAset)))
+                            {
+                                <option value="@k">@k</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Kategori" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="MerkModel" class="form-label fw-semibold text-dark">Merk / Brand / Model</label>
+                        <input asp-for="MerkModel" class="form-control" placeholder="Contoh: Lenovo / Dell / Apple" />
+                        <span asp-validation-for="MerkModel" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="NomorSeri" class="form-label fw-semibold text-dark">Nomor Seri (Serial Number / S/N)</label>
+                        <input asp-for="NomorSeri" class="form-control" placeholder="Nomor seri resmi pabrikan" />
+                        <span asp-validation-for="NomorSeri" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="TanggalPembelian" class="form-label fw-semibold text-dark">Tanggal Pembelian <span class="text-danger">*</span></label>
+                        <input asp-for="TanggalPembelian" type="date" class="form-control" />
+                        <span asp-validation-for="TanggalPembelian" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="NilaiPerolehan" class="form-label fw-semibold text-dark">Nilai Perolehan (Rp)</label>
+                        <input asp-for="NilaiPerolehan" type="number" class="form-control" placeholder="Harga beli / pengadaan" />
+                        <span asp-validation-for="NilaiPerolehan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Kondisi" class="form-label fw-semibold text-dark">Kondisi Aset <span class="text-danger">*</span></label>
+                        <select asp-for="Kondisi" class="form-select">
+                            @foreach (SistemHRD.Models.Enums.KondisiAset kd in Enum.GetValues(typeof(SistemHRD.Models.Enums.KondisiAset)))
+                            {
+                                <option value="@kd">@kd</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Kondisi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Status" class="form-label fw-semibold text-dark">Status Aset <span class="text-danger">*</span></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="@SistemHRD.Models.Enums.StatusAset.Tersedia">Tersedia (Di Gudang)</option>
+                            <option value="@SistemHRD.Models.Enums.StatusAset.Digunakan">Digunakan (Peminjaman)</option>
+                            <option value="@SistemHRD.Models.Enums.StatusAset.DalamPerbaikan">Dalam Perbaikan</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="LokasiPenyimpanan" class="form-label fw-semibold text-dark">Lokasi Gudang / Penyimpanan <span class="text-danger">*</span></label>
+                        <input asp-for="LokasiPenyimpanan" class="form-control" placeholder="Contoh: Gudang IT Lt. 2, Lemari B" />
+                        <span asp-validation-for="LokasiPenyimpanan" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="DeskripsiSpesifikasi" class="form-label fw-semibold text-dark">Spesifikasi Detail & Catatan Pengadaan</label>
+                        <textarea asp-for="DeskripsiSpesifikasi" class="form-control" rows="3" placeholder="Processor, RAM, SSD, Nomor PO, Garansi vendor, dsb."></textarea>
+                        <span asp-validation-for="DeskripsiSpesifikasi" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Daftar" class="btn btn-light border px-4">Batal</a>
+                    <button type="submit" class="btn btn-success text-white px-4">
+                        <i data-lucide="save" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Simpan Aset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

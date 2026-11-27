@@ -1,0 +1,463 @@
+@model SistemHRD.ViewModels.DetailAsetViewModel
+@{
+    ViewData["Title"] = $"Detail Aset - {Model.NamaAset}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Aset</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Daftar">Inventaris</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.NomorAset</li>
+                </ol>
+            </nav>
+            <h4 class="fw-bold mb-0 text-dark">@Model.NamaAset</h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Daftar" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Kembali
+            </a>
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+            {
+                <a asp-action="UbahAset" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                    <i data-lucide="edit-3" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                    Ubah
+                </a>
+                @if (Model.Status == SistemHRD.Models.Enums.StatusAset.Tersedia)
+                {
+                    <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#modalSerahkanAset">
+                        <i data-lucide="user-check" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Serahkan ke Karyawan
+                    </button>
+                }
+                else if (Model.Status == SistemHRD.Models.Enums.StatusAset.Digunakan && Model.PemegangSaatIniId.HasValue)
+                {
+                    <button type="button" class="btn btn-warning text-dark" data-bs-toggle="modal" data-bs-target="#modalKembalikanAset">
+                        <i data-lucide="rotate-ccw" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Kembalikan ke Gudang
+                    </button>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Alert Notifikasi -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="check-circle" class="me-2 text-success" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanSukses"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="alert-circle" class="me-2 text-danger" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanError"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Main Detail Row -->
+    <div class="row g-4 mb-4">
+        <!-- Spesifikasi Aset -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i data-lucide="info" class="me-2 text-primary" style="width:18px;height:18px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Spesifikasi & Informasi Aset
+                    </h6>
+                    <div class="d-flex gap-2">
+                        @switch (Model.Kondisi)
+                        {
+                            case SistemHRD.Models.Enums.KondisiAset.SangatBaik:
+                                <span class="badge bg-success">Kondisi: Sangat Baik</span>
+                                break;
+                            case SistemHRD.Models.Enums.KondisiAset.Baik:
+                                <span class="badge bg-primary">Kondisi: Baik</span>
+                                break;
+                            case SistemHRD.Models.Enums.KondisiAset.RusakRingan:
+                                <span class="badge bg-warning text-dark">Kondisi: Rusak Ringan</span>
+                                break;
+                            case SistemHRD.Models.Enums.KondisiAset.RusakBerat:
+                                <span class="badge bg-danger">Kondisi: Rusak Berat</span>
+                                break;
+                            case SistemHRD.Models.Enums.KondisiAset.Hilang:
+                                <span class="badge bg-dark">Kondisi: Hilang</span>
+                                break;
+                        }
+                        @switch (Model.Status)
+                        {
+                            case SistemHRD.Models.Enums.StatusAset.Tersedia:
+                                <span class="badge bg-info text-dark">Status: Tersedia</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusAset.Digunakan:
+                                <span class="badge bg-success">Status: Digunakan</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusAset.DalamPerbaikan:
+                                <span class="badge bg-warning text-dark">Status: Perbaikan</span>
+                                break;
+                            case SistemHRD.Models.Enums.StatusAset.Dihapuskan:
+                                <span class="badge bg-secondary">Status: Dihapuskan</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Nomor Inventaris / Aset:</span>
+                            <span class="fw-bold text-dark fs-6"><code>@Model.NomorAset</code></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Kategori Inventaris:</span>
+                            <span class="fw-semibold text-dark">@Model.Kategori</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Merk & Model:</span>
+                            <span class="fw-semibold text-dark">@(Model.MerkModel ?? "-")</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Nomor Seri Pabrikan (S/N):</span>
+                            <span class="fw-semibold text-dark">@(Model.NomorSeri ?? "-")</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Tanggal Pembelian:</span>
+                            <span class="fw-semibold text-dark">@Model.TanggalPembelian.ToString("dd MMMM yyyy")</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Nilai Perolehan (Harga Beli):</span>
+                            <span class="fw-bold text-success fs-6">Rp @Model.NilaiPerolehan.ToString("N0")</span>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted small d-block">Lokasi Penyimpanan Default:</span>
+                            <span class="fw-semibold text-dark">@Model.LokasiPenyimpanan</span>
+                        </div>
+                        <div class="col-12 border-top pt-2">
+                            <span class="text-muted small d-block mb-1">Spesifikasi Detail & Catatan:</span>
+                            <div class="p-3 bg-light rounded text-dark" style="white-space:pre-line;">@(string.IsNullOrWhiteSpace(Model.DeskripsiSpesifikasi) ? "Tidak ada catatan spesifikasi tambahan." : Model.DeskripsiSpesifikasi)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pemegang Saat Ini -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i data-lucide="user" class="me-2 text-primary" style="width:18px;height:18px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Status Pemegang Aset
+                    </h6>
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    @if (Model.PemegangSaatIniId.HasValue && !string.IsNullOrWhiteSpace(Model.NamaPemegang))
+                    {
+                        <div>
+                            <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                                <i data-lucide="check-circle" class="me-2 text-success" style="width:20px;height:20px;"></i>
+                                <div class="small fw-semibold">Aset Sedang Dipinjamkan</div>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Nama Karyawan:</span>
+                                <h5 class="fw-bold text-dark mb-0">@Model.NamaPemegang</h5>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Nomor Induk Karyawan:</span>
+                                <code>@Model.NIKPemegang</code>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Departemen & Jabatan:</span>
+                                <span class="fw-semibold text-dark">@(Model.DepartemenPemegang ?? "-") &bull; @(Model.JabatanPemegang ?? "-")</span>
+                            </div>
+                        </div>
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+                        {
+                            <button type="button" class="btn btn-warning text-dark w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalKembalikanAset">
+                                <i data-lucide="corner-down-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                                Proses Pengembalian
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 my-auto">
+                            <div class="bg-light p-3 rounded-circle d-inline-block mb-3">
+                                <i data-lucide="archive" class="text-muted" style="width:36px;height:36px;"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">Aset Berada di Gudang</h6>
+                            <p class="text-muted small mb-3">Aset inventaris ini sedang tidak dipinjamkan dan tersedia untuk diserahkan ke karyawan.</p>
+                            @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+                            {
+                                <button type="button" class="btn btn-success text-white" data-bs-toggle="modal" data-bs-target="#modalSerahkanAset">
+                                    <i data-lucide="user-plus" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                                    Serahkan ke Karyawan
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Riwayat Penyerahan & Timeline Aktivitas -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-semibold" id="tab-penyerahan" data-bs-toggle="tab" data-bs-target="#pane-penyerahan" type="button" role="tab">
+                        <i data-lucide="file-text" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Riwayat Penyerahan (BAST)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-semibold" id="tab-audit" data-bs-toggle="tab" data-bs-target="#pane-audit" type="button" role="tab">
+                        <i data-lucide="history" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Jejak Audit Aktivitas Aset
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-0">
+            <div class="tab-content">
+                <!-- Pane Penyerahan -->
+                <div class="tab-pane fade show active" id="pane-penyerahan" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted small">
+                                <tr>
+                                    <th>NOMOR BAST</th>
+                                    <th>KARYAWAN PEMEGANG</th>
+                                    <th>TANGGAL PENYERAHAN</th>
+                                    <th>KONDISI AWAL & KELENGKAPAN</th>
+                                    <th>STATUS PEMINJAMAN</th>
+                                    <th>PENGEMBALIAN & KONDISI AKHIR</th>
+                                    <th>PETUGAS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RiwayatPenyerahan.Any())
+                                {
+                                    @foreach (var p in Model.RiwayatPenyerahan)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="fw-bold text-dark"><code>@p.NomorDokumen</code></span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">@p.NamaKaryawan</div>
+                                                <div class="text-muted small">NIK: <code>@p.NIK</code> &bull; @(p.Departemen ?? "-")</div>
+                                            </td>
+                                            <td>
+                                                <div class="small fw-semibold text-dark">@p.TanggalPenyerahan.ToString("dd MMM yyyy")</div>
+                                                @if (p.TanggalTargetPengembalian.HasValue)
+                                                {
+                                                    <div class="text-muted small">Target: @p.TanggalTargetPengembalian.Value.ToString("dd/MM/yyyy")</div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">@p.KondisiSaatPenyerahan</span>
+                                                <div class="text-muted small text-truncate" style="max-width:200px;">@(p.KelengkapanAset ?? "-")</div>
+                                            </td>
+                                            <td>
+                                                @if (p.StatusPeminjaman == "Aktif")
+                                                {
+                                                    <span class="badge bg-success">Aktif Dipinjam</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@p.StatusPeminjaman</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (p.TanggalRealisasiPengembalian.HasValue)
+                                                {
+                                                    <div class="small text-dark fw-semibold">@p.TanggalRealisasiPengembalian.Value.ToString("dd MMM yyyy")</div>
+                                                    <span class="badge bg-light text-dark border">Kondisi: @(p.KondisiSaatPengembalian?.ToString() ?? "-")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">Belum dikembalikan</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="small text-dark">@p.DiserahkanOleh</div>
+                                                @if (!string.IsNullOrWhiteSpace(p.DiterimaKembaliOleh))
+                                                {
+                                                    <div class="text-muted small">Kembali: @p.DiterimaKembaliOleh</div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            Belum ada riwayat penyerahan tercatat untuk aset ini.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pane Audit -->
+                <div class="tab-pane fade" id="pane-audit" role="tabpanel">
+                    <div class="p-4">
+                        @if (Model.RiwayatAktivitas.Any())
+                        {
+                            <ul class="timeline list-unstyled mb-0">
+                                @foreach (var r in Model.RiwayatAktivitas)
+                                {
+                                    <li class="mb-3 pb-3 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-primary">@r.TipeAktivitas</span>
+                                            <span class="text-muted small">@r.TanggalAktivitas.ToString("dd MMM yyyy HH:mm")</span>
+                                        </div>
+                                        <div class="fw-semibold text-dark">@r.Deskripsi</div>
+                                        <div class="small text-muted mt-1">
+                                            Petugas: <strong>@r.NamaPetugas</strong>
+                                            @if (!string.IsNullOrWhiteSpace(r.NamaKaryawanTerkait))
+                                            {
+                                                <span>&bull; Terkait Karyawan: <strong>@r.NamaKaryawanTerkait</strong></span>
+                                            }
+                                            &bull; Kondisi: <code>@r.KondisiSebelumnya &rarr; @r.KondisiTerbaru</code>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4 text-muted">
+                                Belum ada aktivitas audit log untuk aset ini.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Serahkan Aset -->
+<div class="modal fade" id="modalSerahkanAset" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="SerahkanAset" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AsetPerusahaanId" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Serahkan Aset ke Karyawan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Aset Inventaris</label>
+                        <div class="fw-bold text-dark">@Model.NamaAset (<code>@Model.NomorAset</code>)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pilih Karyawan Penerima <span class="text-danger">*</span></label>
+                        <select name="KaryawanId" asp-items="ViewBag.DaftarKaryawan" class="form-select" required>
+                            <option value="">-- Pilih Karyawan --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomor Dokumen BAST <span class="text-danger">*</span></label>
+                        <input type="text" name="NomorDokumen" value="BAST-@DateTime.Now.ToString("yyyyMMdd")-@new Random().Next(100, 999)" class="form-control" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Tanggal Penyerahan <span class="text-danger">*</span></label>
+                            <input type="date" name="TanggalPenyerahan" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Target Pengembalian</label>
+                            <input type="date" name="TanggalTargetPengembalian" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kondisi Fisik Saat Penyerahan</label>
+                        <select name="KondisiSaatPenyerahan" class="form-select">
+                            <option value="@SistemHRD.Models.Enums.KondisiAset.SangatBaik">Sangat Baik</option>
+                            <option value="@SistemHRD.Models.Enums.KondisiAset.Baik" selected>Baik</option>
+                            <option value="@SistemHRD.Models.Enums.KondisiAset.RusakRingan">Rusak Ringan</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kelengkapan Aset</label>
+                        <input type="text" name="KelengkapanAset" value="Unit Aset, Charger, Kabel Power, Tas" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Khusus BAST</label>
+                        <textarea name="CatatanPenyerahan" class="form-control" rows="2" placeholder="Catatan perihal pemakaian operasional"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success text-white">Simpan & Serahkan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kembalikan Aset -->
+@if (Model.RiwayatPenyerahan.Any(p => p.StatusPeminjaman == "Aktif"))
+{
+    var penyerahanAktif = Model.RiwayatPenyerahan.First(p => p.StatusPeminjaman == "Aktif");
+    <div class="modal fade" id="modalKembalikanAset" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="KembalikanAset" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="PenyerahanAsetId" value="@penyerahanAktif.Id" />
+                    <input type="hidden" name="AsetPerusahaanId" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Pengembalian Aset ke Gudang</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-light border mb-3">
+                            <div class="small text-muted">Dikembalikan oleh:</div>
+                            <div class="fw-bold text-dark">@penyerahanAktif.NamaKaryawan (<code>@penyerahanAktif.NIK</code>)</div>
+                            <div class="small text-muted">BAST Penyerahan: <code>@penyerahanAktif.NomorDokumen</code></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tanggal Pengembalian Realisasi <span class="text-danger">*</span></label>
+                            <input type="date" name="TanggalRealisasiPengembalian" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Kondisi Fisik Saat Pengembalian <span class="text-danger">*</span></label>
+                            <select name="KondisiSaatPengembalian" class="form-select" required>
+                                <option value="@SistemHRD.Models.Enums.KondisiAset.SangatBaik">Sangat Baik</option>
+                                <option value="@SistemHRD.Models.Enums.KondisiAset.Baik" selected>Baik</option>
+                                <option value="@SistemHRD.Models.Enums.KondisiAset.RusakRingan">Rusak Ringan</option>
+                                <option value="@SistemHRD.Models.Enums.KondisiAset.RusakBerat">Rusak Berat</option>
+                                <option value="@SistemHRD.Models.Enums.KondisiAset.Hilang">Hilang</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Catatan Pemeriksaan Fisik</label>
+                            <textarea name="CatatanPengembalian" class="form-control" rows="2" placeholder="Catatan kondisi fisik, kelengkapan yang dikembalikan, dsb."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning text-dark">Konfirmasi Pengembalian</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

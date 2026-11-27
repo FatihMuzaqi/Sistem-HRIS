@@ -1,0 +1,211 @@
+@model List<SistemHRD.ViewModels.ProgramPelatihanItemViewModel>
+@{
+    ViewData["Title"] = "Daftar Program Pelatihan";
+    var statusTerpilih = ViewBag.StatusTerpilih as SistemHRD.Models.Enums.StatusPelatihan?;
+    var metodeTerpilih = ViewBag.MetodeTerpilih as SistemHRD.Models.Enums.MetodePelatihan?;
+    var kataKunci = ViewBag.KataKunci as string;
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">
+                <i data-lucide="book-open" class="me-2 text-success" style="width:26px;height:26px;display:inline-block;vertical-align:bottom;"></i>
+                Katalog Program Pelatihan
+            </h4>
+            <p class="text-muted small mb-0">Kelola kurikulum, jadwal, kapasitas kelas, dan peserta pelatihan perusahaan.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Kembali ke Dashboard
+            </a>
+            @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+            {
+                <a asp-action="TambahProgram" class="btn btn-success text-white">
+                    <i data-lucide="plus" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                    Tambah Program
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Alert -->
+    @if (TempData["PesanSukses"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="check-circle" class="me-2 text-success" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanSukses"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["PesanError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i data-lucide="alert-circle" class="me-2 text-danger" style="width:20px;height:20px;"></i>
+            <div>@TempData["PesanError"]</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted">Pencarian</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i data-lucide="search" style="width:16px;height:16px;" class="text-muted"></i>
+                        </span>
+                        <input type="text" name="kataKunci" value="@kataKunci" class="form-control border-start-0" placeholder="Kode, judul, atau penyelenggara..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Semua Status</option>
+                        @foreach (SistemHRD.Models.Enums.StatusPelatihan s in Enum.GetValues(typeof(SistemHRD.Models.Enums.StatusPelatihan)))
+                        {
+                            <option value="@s" selected="@(statusTerpilih == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Metode Pelatihan</label>
+                    <select name="metode" class="form-select">
+                        <option value="">Semua Metode</option>
+                        @foreach (SistemHRD.Models.Enums.MetodePelatihan m in Enum.GetValues(typeof(SistemHRD.Models.Enums.MetodePelatihan)))
+                        {
+                            <option value="@m" selected="@(metodeTerpilih == m)">@m</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i data-lucide="filter" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Filter
+                    </button>
+                    <a asp-action="Program" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-muted small">
+                        <tr>
+                            <th>KODE & NAMA PROGRAM</th>
+                            <th>PENYELENGGARA & INSTRUKTUR</th>
+                            <th>METODE & LOKASI</th>
+                            <th>JADWAL PELAKSANAAN</th>
+                            <th>PESERTA</th>
+                            <th>BIAYA / ORANG</th>
+                            <th>STATUS</th>
+                            <th class="text-end">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@p.NamaProgram</div>
+                                        <div class="text-muted small"><code>@p.KodeProgram</code> &bull; @p.NamaDepartemen</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@p.Penyelenggara</div>
+                                        <div class="text-muted small">@(string.IsNullOrWhiteSpace(p.Instruktur) ? "-" : p.Instruktur)</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@p.Metode</span>
+                                        <div class="text-muted small text-truncate" style="max-width:180px;">@p.LokasiAtauTautan</div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">@p.TanggalMulai.ToString("dd MMM yyyy")</div>
+                                        <div class="text-muted small">s/d @p.TanggalSelesai.ToString("dd MMM yyyy") (@p.TotalJam Jam)</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@p.JumlahPesertaTerdaftar / @(p.MaksimalPeserta > 0 ? p.MaksimalPeserta.ToString() : "&infin;")</span>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">
+                                            @(p.BiayaPerPeserta > 0 ? $"Rp {p.BiayaPerPeserta:N0}" : "Gratis / Internal")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @switch (p.Status)
+                                        {
+                                            case SistemHRD.Models.Enums.StatusPelatihan.Draf:
+                                                <span class="badge bg-secondary">Draf</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusPelatihan.PendaftaranDibuka:
+                                                <span class="badge bg-info text-dark">Pendaftaran Dibuka</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusPelatihan.Berlangsung:
+                                                <span class="badge bg-primary">Berlangsung</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusPelatihan.Selesai:
+                                                <span class="badge bg-success">Selesai</span>
+                                                break;
+                                            case SistemHRD.Models.Enums.StatusPelatihan.Dibatalkan:
+                                                <span class="badge bg-danger">Dibatalkan</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Kelola
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li>
+                                                    <a class="dropdown-item" asp-action="DetailProgram" asp-route-id="@p.Id">
+                                                        <i data-lucide="eye" class="me-2" style="width:14px;height:14px;display:inline-block;"></i>Detail & Peserta
+                                                    </a>
+                                                </li>
+                                                @if (User.IsInRole("SuperAdmin") || User.IsInRole("HRD"))
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item" asp-action="UbahProgram" asp-route-id="@p.Id">
+                                                            <i data-lucide="edit-3" class="me-2" style="width:14px;height:14px;display:inline-block;"></i>Ubah Program
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form asp-action="HapusProgram" asp-route-id="@p.Id" method="post" onsubmit="return confirm('Apakah Anda yakin ingin menghapus program pelatihan ini?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i data-lucide="trash-2" class="me-2" style="width:14px;height:14px;display:inline-block;"></i>Hapus Program
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i data-lucide="inbox" class="d-block mx-auto mb-2 text-muted" style="width:40px;height:40px;"></i>
+                                    Tidak ada program pelatihan yang sesuai dengan kriteria filter.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
