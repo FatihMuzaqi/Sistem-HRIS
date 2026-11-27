@@ -1120,6 +1120,226 @@ public static class InisialisasiData
             });
         }
 
+        // ==========================================
+        // PHASE 6: INITIAL DATA PELATIHAN & ASET
+        // ==========================================
+        var karyawanRian = await context.Karyawan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(k => k.PerusahaanId == perusahaanId1 && k.NomorIndukKaryawan == "KRY001");
+
+        // 1. Program Pelatihan
+        var program1 = await context.ProgramPelatihan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.PerusahaanId == perusahaanId1 && p.KodeProgram == "TRN-2026-LDR01");
+
+        if (program1 == null)
+        {
+            program1 = new ProgramPelatihan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                KodeProgram = "TRN-2026-LDR01",
+                NamaProgram = "Kepemimpinan & Manajemen Kolaborasi Tim",
+                Deskripsi = "Pelatihan esensial peningkatan kompetensi manajerial, delegasi tugas efektif, dan resolusi konflik tim.",
+                Penyelenggara = "Divisi People Development",
+                Instruktur = "Dr. Budi Santoso, M.Psi",
+                Metode = MetodePelatihan.InHouse,
+                LokasiAtauTautan = "Ruang Pelatihan Utama Lt. 15",
+                TanggalMulai = DateTime.Today.AddDays(-5),
+                TanggalSelesai = DateTime.Today.AddDays(10),
+                TotalJam = 16.0m,
+                BiayaPerPeserta = 500000m,
+                MaksimalPeserta = 20,
+                Status = StatusPelatihan.Berlangsung,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.ProgramPelatihan.AddAsync(program1);
+        }
+
+        var program2 = await context.ProgramPelatihan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.PerusahaanId == perusahaanId1 && p.KodeProgram == "TRN-2026-SEC02");
+
+        if (program2 == null)
+        {
+            program2 = new ProgramPelatihan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                KodeProgram = "TRN-2026-SEC02",
+                NamaProgram = "Keamanan Informasi & Kepatuhan ISO 27001",
+                Deskripsi = "Sosialisasi keamanan siber, manajemen kata sandi, pencegahan phishing, dan kepatuhan privasi data perusahaan.",
+                Penyelenggara = "Divisi Teknologi & Keamanan",
+                Instruktur = "Agus Pratama, CISSP",
+                Metode = MetodePelatihan.Daring,
+                LokasiAtauTautan = "https://meet.google.com/solusi-security",
+                TanggalMulai = DateTime.Today.AddDays(-30),
+                TanggalSelesai = DateTime.Today.AddDays(-28),
+                TotalJam = 8.0m,
+                BiayaPerPeserta = 0m,
+                MaksimalPeserta = 50,
+                Status = StatusPelatihan.Selesai,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.ProgramPelatihan.AddAsync(program2);
+
+            // Daftarkan karyawan Rian dan terbitkan sertifikat kelulusan
+            if (karyawanRian != null)
+            {
+                var pesertaRian = new PesertaPelatihan
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    ProgramPelatihanId = program2.Id,
+                    KaryawanId = karyawanRian.Id,
+                    StatusKeikutsertaan = StatusKeikutsertaan.Lulus,
+                    NilaiAkhir = 92.5m,
+                    Catatan = "Sangat aktif berdiskusi dan lulus ujian teknis keamanan informasi dengan predikat memuaskan.",
+                    TanggalDidaftarkan = DateTime.Today.AddDays(-35),
+                    TanggalSelesai = DateTime.Today.AddDays(-28),
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                };
+                await context.PesertaPelatihan.AddAsync(pesertaRian);
+
+                var sertifikatRian = new SertifikatPelatihan
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    PesertaPelatihanId = pesertaRian.Id,
+                    NomorSertifikat = "CERT-202610-0001",
+                    JudulSertifikat = "Sertifikat Kelulusan Keamanan Informasi & ISO 27001",
+                    TanggalTerbit = DateTime.Today.AddDays(-27),
+                    PenerbitSertifikat = "Divisi People Development",
+                    KodeVerifikasi = "VERIF-SEC-928371",
+                    Catatan = "Sertifikat resmi kompetensi keamanan digital karyawan.",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                };
+                await context.SertifikatPelatihan.AddAsync(sertifikatRian);
+            }
+        }
+
+        // 2. Inventaris Aset Perusahaan
+        var asetLaptop = await context.AsetPerusahaan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.PerusahaanId == perusahaanId1 && a.NomorAset == "AST-2026-NB001");
+
+        if (asetLaptop == null)
+        {
+            asetLaptop = new AsetPerusahaan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NomorAset = "AST-2026-NB001",
+                NamaAset = "Laptop Lenovo ThinkPad T14 Gen 4",
+                Kategori = KategoriAset.ElektronikLaptop,
+                MerkModel = "Lenovo ThinkPad T14",
+                NomorSeri = "PF49XK21",
+                TanggalPembelian = new DateTime(2026, 1, 15),
+                NilaiPerolehan = 18500000m,
+                Kondisi = KondisiAset.SangatBaik,
+                Status = StatusAset.Digunakan,
+                LokasiPenyimpanan = "Gudang IT Lt. 2",
+                DeskripsiSpesifikasi = "Core i7-1355U, 32GB DDR5, 1TB NVMe, Layar 14 Inch WUXGA IPS, Windows 11 Pro.",
+                PemegangSaatIniId = karyawanRian?.Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            };
+            await context.AsetPerusahaan.AddAsync(asetLaptop);
+
+            if (karyawanRian != null)
+            {
+                var penyerahanLaptop = new PenyerahanAset
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    AsetPerusahaanId = asetLaptop.Id,
+                    KaryawanId = karyawanRian.Id,
+                    NomorDokumen = "BAST-20260120-001",
+                    TanggalPenyerahan = new DateTime(2026, 1, 20),
+                    KondisiSaatPenyerahan = KondisiAset.SangatBaik,
+                    StatusPeminjaman = "Aktif",
+                    KelengkapanAset = "Unit Laptop, Adaptor 65W USB-C, Tas Lenovo ThinkPad, Mouse Wireless",
+                    CatatanPenyerahan = "Penyerahan fasilitas laptop kerja utama karyawan.",
+                    DiserahkanOleh = "HRD & IT Support",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                };
+                await context.PenyerahanAset.AddAsync(penyerahanLaptop);
+
+                await context.RiwayatAset.AddAsync(new RiwayatAset
+                {
+                    Id = Guid.NewGuid(),
+                    PerusahaanId = perusahaanId1,
+                    AsetPerusahaanId = asetLaptop.Id,
+                    TipeAktivitas = TipeAktivitasAset.Penyerahan,
+                    TanggalAktivitas = new DateTime(2026, 1, 20),
+                    KaryawanTerkaitId = karyawanRian.Id,
+                    NamaPetugas = "HRD & IT Support",
+                    KondisiSebelumnya = KondisiAset.SangatBaik,
+                    KondisiTerbaru = KondisiAset.SangatBaik,
+                    Deskripsi = $"Penyerahan aset kepada {karyawanRian.NamaLengkap} (BAST: BAST-20260120-001).",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    CreatedBy = "Sistem"
+                });
+            }
+        }
+
+        var asetMonitor = await context.AsetPerusahaan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.PerusahaanId == perusahaanId1 && a.NomorAset == "AST-2026-MON01");
+
+        if (asetMonitor == null)
+        {
+            await context.AsetPerusahaan.AddAsync(new AsetPerusahaan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NomorAset = "AST-2026-MON01",
+                NamaAset = "Monitor Dell UltraSharp 27 Inch 4K",
+                Kategori = KategoriAset.ElektronikLaptop,
+                MerkModel = "Dell U2723QE",
+                NomorSeri = "CN-08K912-74261",
+                TanggalPembelian = new DateTime(2026, 2, 10),
+                NilaiPerolehan = 8200000m,
+                Kondisi = KondisiAset.SangatBaik,
+                Status = StatusAset.Tersedia,
+                LokasiPenyimpanan = "Gudang IT Lt. 2, Rak Aksesoris B",
+                DeskripsiSpesifikasi = "Panel IPS Black 4K UHD 3840x2160, USB-C Hub 90W PD, RJ45 Ethernet.",
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
+        var asetMobil = await context.AsetPerusahaan
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.PerusahaanId == perusahaanId1 && a.NomorAset == "AST-2026-VEH01");
+
+        if (asetMobil == null)
+        {
+            await context.AsetPerusahaan.AddAsync(new AsetPerusahaan
+            {
+                Id = Guid.NewGuid(),
+                PerusahaanId = perusahaanId1,
+                NomorAset = "AST-2026-VEH01",
+                NamaAset = "Mobil Operasional Toyota Veloz 1.5 Q CVT",
+                Kategori = KategoriAset.KendaraanOperasional,
+                MerkModel = "Toyota Veloz 1.5 Q CVT",
+                NomorSeri = "B 1234 SOL",
+                TanggalPembelian = new DateTime(2025, 11, 20),
+                NilaiPerolehan = 295000000m,
+                Kondisi = KondisiAset.Baik,
+                Status = StatusAset.Tersedia,
+                LokasiPenyimpanan = "Parkir Basemen Gedung Cyber 2 No. B1-14",
+                DeskripsiSpesifikasi = "Warna Putih Mutiara, Nomor Polisi B 1234 SOL, Asuransi All Risk aktif hingga Nov 2027.",
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "Sistem"
+            });
+        }
+
         await context.SaveChangesAsync();
     }
 }
