@@ -1,0 +1,206 @@
+@model SistemHRD.ViewModels.LaporanPenggajianViewModel
+@{
+    ViewData["Title"] = "Laporan Penggajian & Payroll";
+    var bulanTerpilih = ViewBag.Bulan as int?;
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Laporan</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Penggajian</li>
+                </ol>
+            </nav>
+            <h4 class="fw-bold mb-0 text-dark">Laporan Kompensasi & Penggajian Karyawan</h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Kembali
+            </a>
+            <a asp-action="EksporPenggajian"
+               asp-route-tahun="@Model.TahunTerpilih"
+               asp-route-bulan="@bulanTerpilih"
+               asp-route-departemenId="@Model.DepartemenIdTerpilih"
+               class="btn btn-success text-white">
+                <i data-lucide="download" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Ekspor CSV / Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">Tahun</label>
+                    <select name="tahun" class="form-select">
+                        @for (int t = DateTime.Today.Year; t >= DateTime.Today.Year - 3; t--)
+                        {
+                            <option value="@t" selected="@(Model.TahunTerpilih == t)">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Bulan</label>
+                    <select name="bulan" class="form-select">
+                        <option value="">Semua Bulan</option>
+                        @for (int b = 1; b <= 12; b++)
+                        {
+                            var namaBulan = new DateTime(2026, b, 1).ToString("MMMM", new System.Globalization.CultureInfo("id-ID"));
+                            <option value="@b" selected="@(bulanTerpilih == b)">@namaBulan</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-semibold text-muted">Departemen</label>
+                    <select name="departemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select">
+                        <option value="">Semua Departemen</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i data-lucide="filter" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Terapkan
+                    </button>
+                    <a asp-action="Penggajian" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stat Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-primary">
+                <span class="text-muted small fw-semibold">GAJI POKOK</span>
+                <h6 class="fw-bold mb-0 text-dark">Rp @Model.TotalGajiPokok.ToString("N0")</h6>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-info">
+                <span class="text-muted small fw-semibold">TUNJANGAN</span>
+                <h6 class="fw-bold mb-0 text-dark">Rp @Model.TotalTunjangan.ToString("N0")</h6>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-warning">
+                <span class="text-muted small fw-semibold">UANG LEMBUR</span>
+                <h6 class="fw-bold mb-0 text-dark">Rp @Model.TotalLembur.ToString("N0")</h6>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-danger">
+                <span class="text-muted small fw-semibold">POTONGAN</span>
+                <h6 class="fw-bold mb-0 text-danger">Rp @Model.TotalPotongan.ToString("N0")</h6>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-success">
+                <span class="text-muted small fw-semibold">GAJI BERSIH (THP)</span>
+                <h6 class="fw-bold mb-0 text-success">Rp @Model.TotalGajiBersih.ToString("N0")</h6>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-dark">
+                <span class="text-muted small fw-semibold">BEBAN PERUSAHAAN</span>
+                <h6 class="fw-bold mb-0 text-dark">Rp @Model.TotalBebanPerusahaan.ToString("N0")</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">Daftar Payroll (@Model.TotalData Catatan Gaji)</h6>
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i data-lucide="printer" class="me-1" style="width:14px;height:14px;display:inline-block;vertical-align:text-bottom;"></i> Cetak
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-muted small">
+                        <tr>
+                            <th>PERIODE</th>
+                            <th>NIK & NAMA KARYAWAN</th>
+                            <th>DEPARTEMEN</th>
+                            <th>GAJI POKOK</th>
+                            <th>TUNJANGAN</th>
+                            <th>LEMBUR</th>
+                            <th>POTONGAN</th>
+                            <th>GAJI BERSIH</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.DataPenggajian.Any())
+                        {
+                            @foreach (var p in Model.DataPenggajian)
+                            {
+                                <tr>
+                                    <td><span class="fw-semibold text-dark">@p.PeriodeNama</span></td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@p.NamaKaryawan</div>
+                                        <div class="text-muted small"><code>@p.NIK</code> &bull; @p.NamaJabatan</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">@p.NamaDepartemen</span></td>
+                                    <td><span class="small text-dark">Rp @p.GajiPokok.ToString("N0")</span></td>
+                                    <td><span class="small text-dark">Rp @p.TotalTunjangan.ToString("N0")</span></td>
+                                    <td><span class="small text-dark">Rp @p.UangLembur.ToString("N0")</span></td>
+                                    <td><span class="small text-danger">Rp @p.PotonganBpjsPph.ToString("N0")</span></td>
+                                    <td><span class="fw-bold text-success">Rp @p.GajiBersih.ToString("N0")</span></td>
+                                    <td>
+                                        @if (p.Status == "Disetujui" || p.Status == "Selesai")
+                                        {
+                                            <span class="badge bg-success">Disetujui</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">@p.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    Tidak ada catatan penggajian pada filter periode yang dipilih.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalHalaman > 1)
+        {
+            <div class="card-footer bg-white d-flex align-items-center justify-content-between py-3 border-top">
+                <span class="small text-muted">
+                    Menampilkan halaman @Model.HalamanSaatIni dari @Model.TotalHalaman
+                </span>
+                <nav aria-label="Navigasi Halaman">
+                    <ul class="pagination pagination-sm mb-0">
+                        @for (int i = 1; i <= Model.TotalHalaman; i++)
+                        {
+                            <li class="page-item @(i == Model.HalamanSaatIni ? "active" : "")">
+                                <a class="page-link" asp-action="Penggajian"
+                                   asp-route-halaman="@i"
+                                   asp-route-tahun="@Model.TahunTerpilih"
+                                   asp-route-bulan="@bulanTerpilih"
+                                   asp-route-departemenId="@Model.DepartemenIdTerpilih">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>

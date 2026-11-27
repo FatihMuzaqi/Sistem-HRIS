@@ -77,6 +77,18 @@
                 <i data-lucide="award"></i>
                 <span>Penilaian Kinerja</span>
             </a>
+            <a asp-controller="Pelatihan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pelatihan" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
+                <i data-lucide="graduation-cap"></i>
+                <span>Pelatihan SDM</span>
+            </a>
+            <a asp-controller="Aset" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Aset" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
+                <i data-lucide="package"></i>
+                <span>Manajemen Aset</span>
+            </a>
+            <a asp-controller="Laporan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Laporan" ? "active" : "")">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Pusat Laporan</span>
+            </a>
         }
 
         @if (User.IsInRole(NamaPeran.Manager) && !User.IsInRole(NamaPeran.SuperAdmin) && !User.IsInRole(NamaPeran.HRD))
@@ -98,6 +110,18 @@
                 <i data-lucide="user-plus"></i>
                 <span>Wawancara & Pelamar</span>
             </a>
+            <a asp-controller="Pelatihan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pelatihan" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
+                <i data-lucide="graduation-cap"></i>
+                <span>Pelatihan Tim</span>
+            </a>
+            <a asp-controller="Aset" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Aset" && ViewContext.RouteData.Values["action"]?.ToString() != "RiwayatSaya" ? "active" : "")">
+                <i data-lucide="package"></i>
+                <span>Inventaris Aset</span>
+            </a>
+            <a asp-controller="Laporan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Laporan" ? "active" : "")">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Pusat Laporan</span>
+            </a>
         }
 
         @if (User.IsInRole(NamaPeran.Finance) && !User.IsInRole(NamaPeran.SuperAdmin))
@@ -110,6 +134,10 @@
             <a asp-controller="Penggajian" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Penggajian" && ViewContext.RouteData.Values["action"]?.ToString() != "Riwayat" ? "active" : "")">
                 <i data-lucide="wallet"></i>
                 <span>Penggajian (Payroll)</span>
+            </a>
+            <a asp-controller="Laporan" asp-action="Index" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Laporan" ? "active" : "")">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Pusat Laporan</span>
             </a>
         }
 
@@ -129,6 +157,14 @@
         <a asp-controller="Kinerja" asp-action="RiwayatSaya" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Kinerja" && ViewContext.RouteData.Values["action"]?.ToString() == "RiwayatSaya" ? "active" : "")">
             <i data-lucide="award"></i>
             <span>Evaluasi Kinerja Saya</span>
+        </a>
+        <a asp-controller="Pelatihan" asp-action="RiwayatSaya" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pelatihan" && ViewContext.RouteData.Values["action"]?.ToString() == "RiwayatSaya" ? "active" : "")">
+            <i data-lucide="graduation-cap"></i>
+            <span>Pelatihan & Sertifikat</span>
+        </a>
+        <a asp-controller="Aset" asp-action="RiwayatSaya" class="nav-link-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Aset" && ViewContext.RouteData.Values["action"]?.ToString() == "RiwayatSaya" ? "active" : "")">
+            <i data-lucide="package-check"></i>
+            <span>Aset Pegangan Saya</span>
         </a>
 
         <div class="menu-category">Akun</div>

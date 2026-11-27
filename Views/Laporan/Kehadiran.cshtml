@@ -1,0 +1,219 @@
+@model SistemHRD.ViewModels.LaporanKehadiranViewModel
+@{
+    ViewData["Title"] = "Laporan Rekapitulasi Kehadiran";
+    var tMulai = ViewBag.TanggalMulai as string ?? Model.TanggalMulai.ToString("yyyy-MM-dd");
+    var tSelesai = ViewBag.TanggalSelesai as string ?? Model.TanggalSelesai.ToString("yyyy-MM-dd");
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Laporan</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Kehadiran</li>
+                </ol>
+            </nav>
+            <h4 class="fw-bold mb-0 text-dark">Laporan Rekapitulasi Presensi & Kehadiran</h4>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i data-lucide="arrow-left" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Kembali
+            </a>
+            <a asp-action="EksporKehadiran"
+               asp-route-tanggalMulai="@tMulai"
+               asp-route-tanggalSelesai="@tSelesai"
+               asp-route-departemenId="@Model.DepartemenIdTerpilih"
+               class="btn btn-success text-white">
+                <i data-lucide="download" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                Ekspor CSV / Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Tanggal Mulai</label>
+                    <input type="date" name="tanggalMulai" value="@tMulai" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Tanggal Selesai</label>
+                    <input type="date" name="tanggalSelesai" value="@tSelesai" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted">Departemen</label>
+                    <select name="departemenId" asp-items="ViewBag.DaftarDepartemen" class="form-select">
+                        <option value="">Semua Departemen</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i data-lucide="filter" class="me-1" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;"></i>
+                        Terapkan
+                    </button>
+                    <a asp-action="Kehadiran" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-success">
+                <span class="text-muted small fw-semibold">HADIR</span>
+                <h4 class="fw-bold mb-0 text-success">@Model.TotalHadir</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-warning">
+                <span class="text-muted small fw-semibold">TERLAMBAT</span>
+                <h4 class="fw-bold mb-0 text-warning">@Model.TotalTerlambat</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-info">
+                <span class="text-muted small fw-semibold">IZIN</span>
+                <h4 class="fw-bold mb-0 text-info">@Model.TotalIzin</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-primary">
+                <span class="text-muted small fw-semibold">SAKIT</span>
+                <h4 class="fw-bold mb-0 text-primary">@Model.TotalSakit</h4>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm text-center p-3 border-top border-4 border-danger">
+                <span class="text-muted small fw-semibold">ALPA</span>
+                <h4 class="fw-bold mb-0 text-danger">@Model.TotalAlpa</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">Data Presensi (@Model.TotalData Catatan Kehadiran)</h6>
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i data-lucide="printer" class="me-1" style="width:14px;height:14px;display:inline-block;vertical-align:text-bottom;"></i> Cetak
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-muted small">
+                        <tr>
+                            <th>TANGGAL</th>
+                            <th>NIK & NAMA KARYAWAN</th>
+                            <th>DEPARTEMEN</th>
+                            <th>JAM MASUK</th>
+                            <th>JAM KELUAR</th>
+                            <th>STATUS</th>
+                            <th>TELAT</th>
+                            <th>JAM KERJA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.DataKehadiran.Any())
+                        {
+                            @foreach (var k in Model.DataKehadiran)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">@k.Tanggal.ToString("dd MMM yyyy")</div>
+                                        <div class="text-muted small">@k.Tanggal.ToString("dddd")</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@k.NamaKaryawan</div>
+                                        <div class="text-muted small"><code>@k.NIK</code></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@k.NamaDepartemen</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold text-dark">@(k.JamMasuk.HasValue ? k.JamMasuk.Value.ToString(@"hh\:mm") : "-")</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold text-dark">@(k.JamKeluar.HasValue ? k.JamKeluar.Value.ToString(@"hh\:mm") : "-")</span>
+                                    </td>
+                                    <td>
+                                        @if (k.StatusKehadiran == "Hadir")
+                                        {
+                                            <span class="badge bg-success">Hadir</span>
+                                        }
+                                        else if (k.StatusKehadiran == "Terlambat")
+                                        {
+                                            <span class="badge bg-warning text-dark">Terlambat</span>
+                                        }
+                                        else if (k.StatusKehadiran == "Izin")
+                                        {
+                                            <span class="badge bg-info text-dark">Izin</span>
+                                        }
+                                        else if (k.StatusKehadiran == "Sakit")
+                                        {
+                                            <span class="badge bg-primary">Sakit</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@k.StatusKehadiran</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (k.MenitKeterlambatan > 0)
+                                        {
+                                            <span class="badge bg-danger">@k.MenitKeterlambatan Menit</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Tepat Waktu</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="small fw-bold text-dark">@k.TotalJamKerja.ToString("0.0") Jam</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    Tidak ada catatan kehadiran pada rentang tanggal yang dipilih.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalHalaman > 1)
+        {
+            <div class="card-footer bg-white d-flex align-items-center justify-content-between py-3 border-top">
+                <span class="small text-muted">
+                    Menampilkan halaman @Model.HalamanSaatIni dari @Model.TotalHalaman
+                </span>
+                <nav aria-label="Navigasi Halaman">
+                    <ul class="pagination pagination-sm mb-0">
+                        @for (int i = 1; i <= Model.TotalHalaman; i++)
+                        {
+                            <li class="page-item @(i == Model.HalamanSaatIni ? "active" : "")">
+                                <a class="page-link" asp-action="Kehadiran"
+                                   asp-route-halaman="@i"
+                                   asp-route-tanggalMulai="@tMulai"
+                                   asp-route-tanggalSelesai="@tSelesai"
+                                   asp-route-departemenId="@Model.DepartemenIdTerpilih">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
