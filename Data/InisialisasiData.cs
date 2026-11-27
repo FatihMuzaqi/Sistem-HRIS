@@ -1252,7 +1252,7 @@ public static class InisialisasiData
 
             if (karyawanRian != null)
             {
-                var userHrd = await userManager.FindByEmailAsync("hrd@solusihr.id");
+                var userHrd = await context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == "hrd@solusihr.id");
                 var penyerahanLaptop = new PenyerahanAset
                 {
                     Id = Guid.NewGuid(),
